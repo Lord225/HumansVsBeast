@@ -2,12 +2,9 @@
 #define HUMANSVSBEAST_PLAYER_H
 
 #include "map.h"
-#include "game.h"
+//#include "game.h"
 
-typedef struct LOCATION {
-    unsigned int x;
-    unsigned int y;
-} LOCATION;
+
 
 typedef struct PLAYER {
     unsigned int id;
@@ -21,7 +18,7 @@ typedef struct PLAYER {
 
 } PLAYER;
 
-LOCATION get_random_free_location(MAP *map);
+
 
 PLAYER *create_player(unsigned int *player_count, LOCATION spawn_point);
 

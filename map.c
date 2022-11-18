@@ -2,6 +2,7 @@
 #include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 
 MAP *load_map(void) {
@@ -47,7 +48,7 @@ MAP *load_map(void) {
     return map;
 }
 
-void unload_map(MAP **map) {
+void destroy_map(MAP **map) {
 
     if (!map || !*map) {
         return;
@@ -112,4 +113,24 @@ void display_map_ncurses(MAP *map) {
         }
     }
 
+}
+
+LOCATION get_random_free_location(MAP *map) {
+
+    LOCATION location;
+
+    srand(time(NULL));
+    unsigned int x = rand() % map->width;
+    unsigned int y = rand() % map->height;
+
+
+    while (map->map[y][x] != ' ') {
+        x = rand() % map->width;
+        y = rand() % map->height;
+    }
+
+    location.x = x;
+    location.y = y;
+
+    return location;
 }

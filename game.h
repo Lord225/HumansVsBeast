@@ -1,8 +1,9 @@
 #ifndef HUMANSVSBEAST_GAME_H
 #define HUMANSVSBEAST_GAME_H
 
-#include "map.h"
 #include "player.h"
+#include "map.h"
+
 
 typedef struct GAME {
     MAP *map;
