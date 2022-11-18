@@ -23,23 +23,23 @@ Map *load_map(void) {
 
     map->height = 0;
     map->width = 0;
-    map->map = NULL;
+    map->fields = NULL;
 
     fscanf(f, "%d %d\n", &map->height, &map->width);
 
-    map->map = malloc(sizeof(char *) * map->height);
-    if (!map->map) {
+    map->fields = malloc(sizeof(Field *) * map->height);
+    if (!map->fields) {
         printf("Error: Can't allocate memory for map");
         exit(1);
     }
     for (int i = 0; i < map->height; i++) {
-        map->map[i] = malloc(sizeof(char) * map->width);
-        if (!map->map[i]) {
+        map->fields[i] = malloc(sizeof(Field) * map->width);
+        if (!map->fields[i]) {
             printf("Error: Can't allocate memory for map");
             exit(1);
         }
         for (int j = 0; j < map->width; j++) {
-            fscanf(f, "%c", &map->map[i][j]);
+            fscanf(f, "%c", (char *)&map->fields[i][j].tile);
         }
         fscanf(f, "\n");
     }
@@ -56,9 +56,9 @@ void destroy_map(Map **map) {
     }
 
     for (int i = 0; i < (*map)->height; i++) {
-        free((*map)->map[i]);
+        free((*map)->fields[i]);
     }
-    free((*map)->map);
+    free((*map)->fields);
     free(*map);
     *map = NULL;
 
@@ -73,7 +73,7 @@ void display_map(Map *map) {
 
     for (int i = 0; i < map->height; i++) {
         for (int j = 0; j < map->width; j++) {
-            printf("%c", map->map[i][j]);
+            printf("%c", map->fields[i][j].tile);
         }
         printf("\n");
     }
@@ -94,21 +94,21 @@ void display_map_ncurses(Map *map) {
     for (int i = 0; i < map->height; i++) {
         move(i, 0);
         for (int j = 0; j < map->width; j++) {
-            if (map->map[i][j] == '?') {
+            if (map->fields[i][j].tile == WALL) {
                 attron(A_REVERSE);
                 printw(" ");
                 attroff(A_REVERSE);
-            } else if (map->map[i][j] == 'c' || map->map[i][j] == 't' || map->map[i][j] == 'T') {
+            } else if (map->fields[i][j].tile == COIN || map->fields[i][j].tile == TREASURE || map->fields[i][j].tile == LARGE_TREASURE) {
                 attron(COLOR_PAIR(2));
-                printw("%c", map->map[i][j]);
+                printw("%c", map->fields[i][j].tile);
                 attroff(COLOR_PAIR(1));
-            } else if (map->map[i][j] == 'A') {
+            } else if (map->fields[i][j].tile == CAMPSITE) {
                 attron(COLOR_PAIR(3));
-                printw("%c", map->map[i][j]);
+                printw("%c", map->fields[i][j].tile);
                 attroff(COLOR_PAIR(3));
             } else {
 
-                printw("%c", map->map[i][j]);
+                printw("%c", map->fields[i][j].tile);
             }
 
         }
@@ -116,16 +116,16 @@ void display_map_ncurses(Map *map) {
 
 }
 
-LOCATION get_random_free_location(Map *map) {
+Location get_random_free_location(Map *map) {
 
-    LOCATION location;
+    Location location;
 
     srand(time(NULL));
     unsigned int x = rand() % map->width;
     unsigned int y = rand() % map->height;
 
 
-    while (map->map[y][x] != ' ') {
+    while (map->fields[y][x].tile != EMPTY) {
         x = rand() % map->width;
         y = rand() % map->height;
     }

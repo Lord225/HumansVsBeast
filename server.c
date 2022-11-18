@@ -9,11 +9,23 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include "socket.h"
+#include <stdbool.h>
+#include "pthread.h"
+#include "threads.h"
 
 #define PORT 9002
 
+bool server_running = true;
+
 int main(int argc, char *argv[]) {
 
+    int sfd = create_socket(PORT);
+    if (0 > sfd) {
+        return -1;
+    }
+
+    pthread_t connection_handler;
 
     Map *map = load_map();
 
@@ -25,8 +37,8 @@ int main(int argc, char *argv[]) {
 
     game->players[game->player_count++] = player1;
 
-
-    initscr(); // init screen
+//  init screen
+    initscr();
 //    raw();
     noecho();
     cbreak();
@@ -51,42 +63,6 @@ int main(int argc, char *argv[]) {
     // #################### SOCKETS ####################
 
 
-    int sfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (0 > sfd) {
-        perror("socket");
-        endwin();
-        return -1;
-    }
-
-    // define server address
-    struct sockaddr_in server_info = {0};
-    server_info.sin_family = AF_INET;
-    server_info.sin_port = htons(PORT);
-    server_info.sin_addr.s_addr = INADDR_ANY;
-
-    socklen_t server_info_len = sizeof(server_info);
-
-    int opt = 1;
-    if(0 > setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
-        perror("setsockopt");
-        endwin();
-        return -1;
-    }
-
-    // bind socket to address
-    if (0 > bind(sfd, (struct sockaddr *) &server_info, server_info_len)) {
-        perror("bind");
-        endwin();
-        return -1;
-    }
-
-    // listen for connections
-    if (0 > listen(sfd, 0)) {
-        perror("listen");
-        endwin();
-        return -1;
-    }
-
     // define client address
     struct sockaddr_in client_info = {0};
     socklen_t client_info_len = sizeof(client_info);
@@ -106,26 +82,40 @@ int main(int argc, char *argv[]) {
 
     // #################### SOCKETS ####################
 
-    int key = ' ';
 
-    while (1) {
 
-        ssize_t recvd = recv(cfd, &key, sizeof(key) - 1, 0);
-        if(key == 'q') {
-            break;
-        }
-        usleep(500000);
-        player_move(game, 0, key);
-        refresh();
-        int response = 1;
-        send(cfd,&response, sizeof(response), 0);
+    while (server_running) {
+        display_map(map);
+
+
+
+        sleep(1);
     }
+
+
+//    int key = ' ';
+//    while (server_running) {
+//
+//        pthread_create(&connection_handler, NULL, handle_connection, (void *) &cfd);
+//
+//        ssize_t recvd = recv(cfd, &key, sizeof(key) - 1, 0);
+//        if(key == 'q') {
+//            server_running = false;
+//        }
+//        usleep(500000);
+//        player_move(game, 0, key);
+//        refresh();
+//        int response = 1;
+//        send(cfd,&response, sizeof(response), 0);
+//    }
 
     close(cfd);
 
     endwin(); // end screen
 
     destroy_game(&game);
+
+    printf("Server closed\n");
 
     return 0;
 }

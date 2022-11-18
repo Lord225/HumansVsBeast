@@ -6,8 +6,8 @@
 typedef struct Player {
     unsigned int id;
 
-    LOCATION current_location;
-    LOCATION spawn_point;
+    Location current_location;
+    Location spawn_point;
 
     unsigned int deaths;
     unsigned int coins_found;
@@ -17,7 +17,7 @@ typedef struct Player {
 
 
 
-Player *create_player(unsigned int *player_count, LOCATION spawn_point);
+Player *create_player(unsigned int *player_count, Location spawn_point);
 
 void destroy_player(Player **player);
 
