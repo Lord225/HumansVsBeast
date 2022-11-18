@@ -44,9 +44,14 @@ int main(void) {
 
     int key = ' ';
 
-    while (tolower(key) != 'q') {
+    while (1) {
         key = getch();
+        if(key == 'q') {
+            break;
+        }
         send(sfd, &key, sizeof(key), 0);
+        int response;
+        recv(sfd, &response, sizeof(response), 0);
     }
 
     close(sfd);

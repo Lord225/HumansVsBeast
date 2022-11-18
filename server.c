@@ -108,12 +108,17 @@ int main(int argc, char *argv[]) {
 
     int key = ' ';
 
-    while (tolower(key) != 'q') {
+    while (1) {
 
         ssize_t recvd = recv(cfd, &key, sizeof(key) - 1, 0);
-
+        if(key == 'q') {
+            break;
+        }
+        usleep(500000);
         player_move(game, 0, key);
         refresh();
+        int response = 1;
+        send(cfd,&response, sizeof(response), 0);
     }
 
     close(cfd);
