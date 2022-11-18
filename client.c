@@ -49,13 +49,12 @@ int main(void) {
         send(sfd, &key, sizeof(key), 0);
     }
 
+    close(sfd);
 
     endwin();
 
-
-
     // close the socket
-    close(sfd);
+
 
     return 0;
 }
