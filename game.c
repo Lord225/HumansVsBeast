@@ -38,40 +38,38 @@ void player_move(GAME *game, unsigned int player_id, int key) {
     switch (key) {
         case KEY_UP:
             if (game->map->map[player->current_location.y - 1][player->current_location.x] != '@') {
+                mvprintw(player->current_location.y, player->current_location.x, " ");
                 player->current_location.y -= 1;
                 attron(COLOR_PAIR(PLAYER_COLOR));
                 mvprintw(player->current_location.y, player->current_location.x, "%d", player_id+1);
                 attroff(COLOR_PAIR(PLAYER_COLOR));
-                mvprintw(player->current_location.y + 1, player->current_location.x, " ");
             }
             break;
         case KEY_DOWN:
             if (game->map->map[player->current_location.y + 1][player->current_location.x] != '@') {
+                mvprintw(player->current_location.y, player->current_location.x, " ");
                 player->current_location.y += 1;
                 attron(COLOR_PAIR(PLAYER_COLOR));
                 mvprintw(player->current_location.y, player->current_location.x, "%d", player_id+1);
                 attroff(COLOR_PAIR(PLAYER_COLOR));
-                mvprintw(player->current_location.y - 1, player->current_location.x, " ");
-
             }
             break;
         case KEY_LEFT:
             if (game->map->map[player->current_location.y][player->current_location.x - 1] != '@') {
+                mvprintw(player->current_location.y, player->current_location.x, " ");
                 player->current_location.x -= 1;
                 attron(COLOR_PAIR(PLAYER_COLOR));
                 mvprintw(player->current_location.y, player->current_location.x, "%d", player_id+1);
                 attroff(COLOR_PAIR(PLAYER_COLOR));
-                mvprintw(player->current_location.y, player->current_location.x + 1, " ");
-
             }
             break;
         case KEY_RIGHT:
             if (game->map->map[player->current_location.y][player->current_location.x + 1] != '@') {
+                mvprintw(player->current_location.y, player->current_location.x, " ");
                 player->current_location.x += 1;
                 attron(COLOR_PAIR(PLAYER_COLOR));
                 mvprintw(player->current_location.y, player->current_location.x, "%d", player_id+1);
                 attroff(COLOR_PAIR(PLAYER_COLOR));
-                mvprintw(player->current_location.y, player->current_location.x - 1, " ");
             }
             break;
         default:

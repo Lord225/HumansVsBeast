@@ -7,7 +7,7 @@
 
 MAP *load_map(void) {
 
-    FILE *f = fopen("map.map", "r");
+    FILE *f = fopen("../map.map", "r");
 
     if (!f) {
         printf("Error: Can't open map file");

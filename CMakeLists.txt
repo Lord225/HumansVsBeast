@@ -12,7 +12,6 @@ add_compile_options(
 #        "-Werror"
         "-Wall"
         "-Wextra"
-#        "-Wextra"
 #        "-fmax-errors=5"
 #        "-Werror=vla"
 #        "-Wno-error=unused-parameter"
@@ -24,16 +23,18 @@ add_compile_options(
 
 set(CURSES_NEED_NCURSES TRUE)
 
-set(CURSES_NEED_WIDE TRUE) # test
-
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 find_package(Curses REQUIRED)
 
 find_package(Threads REQUIRED)
 
-include_directories(HumanVsBeast ${CURSES_INCLUDE_DIRS})
+include_directories(${CURSES_INCLUDE_DIRS})
 
-add_executable(HumansVsBeast main.c map.c map.h player.c player.h game.c game.h)
+add_executable(server server.c map.c map.h player.c player.h game.c game.h)
 
-target_link_libraries(HumansVsBeast ${CURSES_LIBRARIES} Threads::Threads)
+target_link_libraries(server ${CURSES_LIBRARIES} Threads::Threads)
+
+add_executable(client client.c)
+
+target_link_libraries(client ${CURSES_LIBRARIES})

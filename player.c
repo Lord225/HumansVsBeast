@@ -12,7 +12,7 @@ PLAYER *create_player(unsigned int *player_count, LOCATION spawn_point) {
     }
 
     player->id = *player_count;
-    *player_count += 1;
+//    *player_count += 1;
 
 
     player->deaths = 0;
