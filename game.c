@@ -8,15 +8,15 @@
 #include <unistd.h>
 
 
-GAME *create_game(MAP *map) {
-    GAME *game = malloc(sizeof(GAME));
+Game *create_game(Map *map) {
+    Game *game = malloc(sizeof(Game));
     game->map = map;
     game->player_count = 0;
 
     return game;
 }
 
-void destroy_game(GAME **game) {
+void destroy_game(Game **game) {
     if (!game || !*game) {
         return;
     }
@@ -31,9 +31,9 @@ void destroy_game(GAME **game) {
     *game = NULL;
 }
 
-void player_move(GAME *game, unsigned int player_id, int key) {
+void player_move(Game *game, unsigned int player_id, int key) {
 
-    PLAYER *player = game->players[player_id];
+    Player *player = game->players[player_id];
 
     switch (key) {
         case KEY_UP:

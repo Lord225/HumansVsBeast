@@ -4,8 +4,8 @@
 //#include "map.h"
 
 
-PLAYER *create_player(unsigned int *player_count, LOCATION spawn_point) {
-    PLAYER *player = malloc(sizeof(PLAYER));
+Player *create_player(unsigned int *player_count, LOCATION spawn_point) {
+    Player *player = malloc(sizeof(Player));
     if (!player) {
         printf("Error: Can't allocate memory for player");
         exit(1);
@@ -24,7 +24,7 @@ PLAYER *create_player(unsigned int *player_count, LOCATION spawn_point) {
     return player;
 }
 
-void destroy_player(PLAYER **player) {
+void destroy_player(Player **player) {
 
     if (!player || !*player) {
         return;

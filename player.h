@@ -2,11 +2,8 @@
 #define HUMANSVSBEAST_PLAYER_H
 
 #include "map.h"
-//#include "game.h"
 
-
-
-typedef struct PLAYER {
+typedef struct Player {
     unsigned int id;
 
     LOCATION current_location;
@@ -16,13 +13,13 @@ typedef struct PLAYER {
     unsigned int coins_found;
     unsigned int coins_brought;
 
-} PLAYER;
+} Player;
 
 
 
-PLAYER *create_player(unsigned int *player_count, LOCATION spawn_point);
+Player *create_player(unsigned int *player_count, LOCATION spawn_point);
 
-void destroy_player(PLAYER **player);
+void destroy_player(Player **player);
 
 
 

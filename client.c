@@ -9,25 +9,7 @@
 #define PORT 9002
 #define ADDRESS 0x7f000001
 
-void flushSTDIN() {
-
-    int c;
-    do {
-        errno = 0;
-        c = getchar();
-
-        if (errno) {
-            fprintf(stderr, "Error flushing standard input buffer: %s\n", strerror(errno));
-        }
-    }
-    while ((c != '\n') && (!feof(stdin)));
-
-    return;
-}
-
 int main(void) {
-
-
 
     int sfd = socket(AF_INET, SOCK_STREAM, 0);
     if (0 > sfd) {
@@ -61,28 +43,25 @@ int main(void) {
 
     keypad(stdscr, TRUE);
 
-    int key = ' ';
-    setvbuf(stdin, NULL, _IONBF, 0);
-
     while (1) {
-
-        key = getch();
-
+        flushinp();
+        int key = getch();
         if(key == 'q') {
             break;
         }
         send(sfd, &key, sizeof(key), 0);
         int response;
         recv(sfd, &response, sizeof(response), 0);
-        flushinp();
+
     }
 
-    close(sfd);
+
 
     endwin();
 
-    // close the socket
+    close(sfd);
 
+    printf("Disconnected\n");
 
     return 0;
 }

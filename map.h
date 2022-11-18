@@ -5,25 +5,25 @@
 #define MONEY_COLOR 2
 #define CAMP_COLOR 3
 
-typedef struct MAP {
+typedef struct Map {
     char **map;
     int height;
     int width;
-} MAP;
+} Map;
 
 typedef struct LOCATION {
     unsigned int x;
     unsigned int y;
 } LOCATION;
 
-MAP *load_map(void);
+Map *load_map(void);
 
-void display_map(MAP *map);
+void display_map(Map *map);
 
-void destroy_map(MAP **map);
+void destroy_map(Map **map);
 
-void display_map_ncurses(MAP *map);
+void display_map_ncurses(Map *map);
 
-LOCATION get_random_free_location(MAP *map);
+LOCATION get_random_free_location(Map *map);
 
 #endif //HUMANSVSBEAST_MAP_H

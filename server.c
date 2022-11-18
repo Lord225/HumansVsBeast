@@ -15,13 +15,13 @@
 int main(int argc, char *argv[]) {
 
 
-    MAP *map = load_map();
+    Map *map = load_map();
 
-    GAME *game = create_game(map);
+    Game *game = create_game(map);
 
 //    display_map(map);
 
-    PLAYER *player1 = create_player(&game->player_count, get_random_free_location(map));
+    Player *player1 = create_player(&game->player_count, get_random_free_location(map));
 
     game->players[game->player_count++] = player1;
 

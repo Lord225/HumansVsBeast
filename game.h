@@ -5,16 +5,16 @@
 #include "map.h"
 
 
-typedef struct GAME {
-    MAP *map;
-    PLAYER *players[4];
+typedef struct Game {
+    Map *map;
+    Player *players[4];
     unsigned int player_count;
-} GAME;
+} Game;
 
-GAME *create_game(MAP *map);
+Game *create_game(Map *map);
 
-void destroy_game(GAME **game);
+void destroy_game(Game **game);
 
-void player_move(GAME *game, unsigned int player_id, int key);
+void player_move(Game *game, unsigned int player_id, int key);
 
 #endif //HUMANSVSBEAST_GAME_H

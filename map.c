@@ -6,7 +6,7 @@
 
 #define MAP_FILE "map.txt"
 
-MAP *load_map(void) {
+Map *load_map(void) {
 
     FILE *f = fopen(MAP_FILE, "r");
 
@@ -15,7 +15,7 @@ MAP *load_map(void) {
         exit(1);
     }
 
-    MAP *map = malloc(sizeof(MAP));
+    Map *map = malloc(sizeof(Map));
     if (!map) {
         printf("Error: Can't allocate memory for map");
         exit(1);
@@ -49,7 +49,7 @@ MAP *load_map(void) {
     return map;
 }
 
-void destroy_map(MAP **map) {
+void destroy_map(Map **map) {
 
     if (!map || !*map) {
         return;
@@ -64,7 +64,7 @@ void destroy_map(MAP **map) {
 
 }
 
-void display_map(MAP *map) {
+void display_map(Map *map) {
 
     if (!map) {
         printf("Error: Can't display map");
@@ -80,7 +80,7 @@ void display_map(MAP *map) {
 
 }
 
-void display_map_ncurses(MAP *map) {
+void display_map_ncurses(Map *map) {
 
     if (!map) {
         printf("Error: Can't display map");
@@ -116,7 +116,7 @@ void display_map_ncurses(MAP *map) {
 
 }
 
-LOCATION get_random_free_location(MAP *map) {
+LOCATION get_random_free_location(Map *map) {
 
     LOCATION location;
 
