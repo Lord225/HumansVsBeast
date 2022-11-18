@@ -4,10 +4,11 @@
 #include <stdlib.h>
 #include <time.h>
 
+#define MAP_FILE "map.txt"
 
 MAP *load_map(void) {
 
-    FILE *f = fopen("../map.map", "r");
+    FILE *f = fopen(MAP_FILE, "r");
 
     if (!f) {
         printf("Error: Can't open map file");
@@ -93,7 +94,7 @@ void display_map_ncurses(MAP *map) {
     for (int i = 0; i < map->height; i++) {
         move(i, 0);
         for (int j = 0; j < map->width; j++) {
-            if (map->map[i][j] == '@') {
+            if (map->map[i][j] == '?') {
                 attron(A_REVERSE);
                 printw(" ");
                 attroff(A_REVERSE);
