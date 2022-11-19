@@ -21,38 +21,10 @@ Game *create_game(Map *map) {
     return game;
 }
 
-void display_non_static_game_info(Game *game) {
-
+void display_game_legend(Game *game) {
+    int row = game->map->height - 9;
     int column = game->map->width + 3;
-    int row = 1;
 
-//    mvprintw(row++, column, "Server's PID: %d", getpid());
-//    mvprintw(row++, column + 1 + strlen("Campsite X/Y: "), "%d/%d", game->campsite_location.x,
-//             game->campsite_location.y);
-//    mvprintw(row++, column, "Round number: %d", game->round_number);
-    row += 2;
-    mvprintw(row++, column + 1 + strlen("Round number: "), "%d", game->round_number);
-
-
-}
-
-void display_static_game_info(Game *game) {
-    int column = game->map->width + 3;
-    int row = 1;
-    mvprintw(row++, column, "Server's PID: %d", getpid());
-    mvprintw(row++, column + 1, "Campsite X/Y:");
-    mvprintw(row++, column + 1, "Round number:");
-    row += 1;
-    mvprintw(row++, column, "Parameter:   Player1  Player2  Player3  Player4");
-    mvprintw(row++, column + 1, "PID");
-    mvprintw(row++, column + 1, "Type");
-    mvprintw(row++, column + 1, "Curr X/Y");
-    mvprintw(row++, column + 1, "Deaths");
-    row += 1;
-    mvprintw(row++, column + 1, "Coins");
-    mvprintw(row++, column + 5, "carried");
-    mvprintw(row++, column + 5, "brought");
-    row += 2;
     mvprintw(row++, column, "Legend:");
     attron(COLOR_PAIR(PLAYER_COLOR));
     mvprintw(row, column + 1, "1234");
@@ -87,6 +59,87 @@ void display_static_game_info(Game *game) {
     mvprintw(row, column + 1, "A");
     attroff(COLOR_PAIR(CAMP_COLOR));
     mvprintw(row, column + 6, "- campsite");
+}
+
+void display_non_static_game_info(Game *game) {
+
+    int column = game->map->width + 3;
+    int row = 1;
+    row += 1;
+    mvprintw(row++, column + 1 + strlen("Campsite X/Y: "), "%d/%d", game->campsite_location.x,
+             game->campsite_location.y);
+    mvprintw(row++, column + 1, "Round number: %d", game->round_number);
+    row += 2;
+    for (int i = 0; i < 4; i++) {
+        if (game->players[i]) {
+            mvprintw(row, column + 4 + 9 * (i + 1), "%d", game->players[i]->pid);
+        } else {
+            mvprintw(row, column + 4 + 9 * (i + 1), "-");
+        }
+    }
+    row += 1;
+    for (int i = 0; i < 4; i++) {
+        if (game->players[i]) {
+            mvprintw(row, column + 4 + 9 * (i + 1), "%s", "HUMAN");
+        } else {
+            mvprintw(row, column + 4 + 9 * (i + 1), "-");
+        }
+    }
+    row += 1;
+    for (int i = 0; i < 4; i++) {
+        if (game->players[i]) {
+            mvprintw(row, column + 4 + 9 * (i + 1), "%d/%d", game->players[i]->current_location.x,
+                     game->players[i]->current_location.y);
+        } else {
+            mvprintw(row, column + 4 + 9 * (i + 1), "-/-");
+        }
+    }
+    row += 1;
+    for (int i = 0; i < 4; i++) {
+        if (game->players[i]) {
+            mvprintw(row, column + 4 + 9 * (i + 1), "%d", game->players[i]->deaths);
+        } else {
+            mvprintw(row, column + 4 + 9 * (i + 1), "-");
+        }
+    }
+
+    row += 3;
+
+    for (int i = 0; i < 4; i++) {
+        if (game->players[i]) {
+            mvprintw(row, column + 4 + 9 * (i + 1), "%d", game->players[i]->coins_found);
+        } else {
+            mvprintw(row, column + 4 + 9 * (i + 1), "-");
+        }
+    }
+
+    row += 1;
+    for (int i = 0; i < 4; i++) {
+        if (game->players[i]) {
+            mvprintw(row, column + 4 + 9 * (i + 1), "%d", game->players[i]->coins_brought);
+        } else {
+            mvprintw(row, column + 4 + 9 * (i + 1), "-");
+        }
+    }
+
+}
+
+void display_static_game_info(Game *game) {
+    int column = game->map->width + 3;
+    int row = 1;
+    mvprintw(row++, column, "Server's PID: %d", getpid());
+    mvprintw(row++, column + 1, "Campsite X/Y:");
+    mvprintw(row++, column + 1, "Round number:");
+    row += 1;
+    mvprintw(row++, column, "Parameter:   Player1  Player2  Player3  Player4");
+    mvprintw(row++, column + 1, "PID");
+    mvprintw(row++, column + 1, "Type");
+    mvprintw(row++, column + 1, "Curr X/Y");
+    mvprintw(row++, column + 1, "Deaths");
+    row += 1;
+    mvprintw(row++, column + 1, "Coins");
+    mvprintw(row++, column + 5, "carried");
+    mvprintw(row++, column + 5, "brought");
 
 }
 

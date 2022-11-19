@@ -25,4 +25,9 @@ void display_non_static_game_info(Game *game);
 
 void display_static_game_info(Game *game);
 
+void display_game_info(Game *game);
+
+void display_game_legend(Game *game);
+
+
 #endif //HUMANSVSBEAST_GAME_H

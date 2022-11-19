@@ -110,10 +110,8 @@ int main(void) {
     keypad(stdscr, TRUE);
 
 
-
-
-
     display_static_game_info(game);
+    display_game_legend(game);
 
     while (server.server_running) {
         display_non_static_game_info(game);
