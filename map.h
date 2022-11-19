@@ -4,6 +4,7 @@
 #define PLAYER_COLOR 1
 #define MONEY_COLOR 2
 #define CAMP_COLOR 3
+#define BEAST_COLOR 4
 
 typedef enum Tile {
     EMPTY = ' ',
@@ -13,6 +14,7 @@ typedef enum Tile {
     COIN = 'c',
     TREASURE = 't',
     LARGE_TREASURE = 'T',
+    DROPPED_TRERASURE = 'D'
 } Tile;
 
 typedef struct Field {
@@ -32,11 +34,9 @@ typedef struct Location {
 
 Map *load_map(void);
 
-void display_map(Map *map);
-
 void destroy_map(Map **map);
 
-void display_map_ncurses(Map *map);
+void display_map(Map *map);
 
 Location get_random_free_location(Map *map);
 

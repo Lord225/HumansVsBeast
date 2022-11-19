@@ -4,10 +4,9 @@
 #include <pthread.h>
 #include "player.h"
 #include "map.h"
-
+#include <stdbool.h>
 
 typedef struct Game {
-    unsigned int pid;
     unsigned int round_number;
     Map *map;
     Location campsite_location;
@@ -22,6 +21,8 @@ void destroy_game(Game **game);
 
 void player_move(Game *game, unsigned int player_id, int key);
 
-void display_gamee_info(Game *game);
+void display_non_static_game_info(Game *game);
+
+void display_static_game_info(Game *game);
 
 #endif //HUMANSVSBEAST_GAME_H

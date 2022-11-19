@@ -12,31 +12,28 @@
 #include "socket.h"
 #include <stdbool.h>
 #include "pthread.h"
-#include "threads.h"
-
 
 #define PORT 9002
 
-static bool server_running = true;
-
-typedef struct ConnHandlingArgs {
+typedef struct Server {
+    bool server_running;
     int sfd;
     Game *game;
-} ConnHandlingArgs;
+} Server;
+
 
 void *connection_handlig(void *arg) {
-    ConnHandlingArgs args = *(ConnHandlingArgs *) arg;
+    Server args = *(Server *) arg;
 
     int response;
-    while (server_running) {
+    while (args.server_running) {
 
 
         // define client address
         struct sockaddr_in client_info = {0};
-        socklen_t client_info_len = sizeof(client_info);
 
         // accept connection
-        int cfd = accept(args.sfd, (struct sockaddr *) &client_info, &client_info_len);
+        int cfd = accept(args.sfd, (struct sockaddr *) &client_info, (socklen_t *) sizeof(client_info));
         if (cfd < 0) {
             fprintf(stderr, "[CONN_THERED] [ERROR] accept failed\n");
         } else {
@@ -59,15 +56,12 @@ void *connection_handlig(void *arg) {
     }
 }
 
-int main(int argc, char *argv[]) {
+int main(void) {
 
     int sfd = create_socket(PORT);
     if (0 > sfd) {
         return -1;
     }
-
-//
-
 
 
 
@@ -75,11 +69,13 @@ int main(int argc, char *argv[]) {
 
     Game *game = create_game(map);
 
-    ConnHandlingArgs args = {sfd, game};
+//    ConnHandlingArgs args = {sfd, game};
+
+    Server server = {true, sfd, game};
 
     pthread_t threadConnHandling;
 
-    pthread_create(&threadConnHandling, NULL, connection_handlig, &args);
+    pthread_create(&threadConnHandling, NULL, connection_handlig, &server);
 
 //    display_map(map);
 
@@ -101,6 +97,9 @@ int main(int argc, char *argv[]) {
     refresh();
 //    start_color();
     init_pair(PLAYER_COLOR, COLOR_WHITE, COLOR_MAGENTA);
+    init_pair(MONEY_COLOR, COLOR_BLACK, COLOR_YELLOW);
+    init_pair(CAMP_COLOR, COLOR_WHITE, COLOR_GREEN);
+    init_pair(BEAST_COLOR, COLOR_WHITE, COLOR_RED);
 
 //    attron(COLOR_PAIR(PLAYER_COLOR));
 //    mvprintw(player1->spawn_point.y, player1->spawn_point.x, "%d", 1);
@@ -110,25 +109,21 @@ int main(int argc, char *argv[]) {
 
     keypad(stdscr, TRUE);
 
-    // #################### SOCKETS ####################
 
 
 
 
+    display_static_game_info(game);
 
-    // close socket
-
-
-
-    // #################### SOCKETS ####################
-
+    while (server.server_running) {
+        display_non_static_game_info(game);
+        display_map(game->map);
 
 
-    while (server_running) {
-        display_gamee_info(game);
         refresh();
 
         sleep(1);
+        game->round_number+=1;
     }
 
 

@@ -71,25 +71,8 @@ void display_map(Map *map) {
         exit(1);
     }
 
-    for (int i = 0; i < map->height; i++) {
-        for (int j = 0; j < map->width; j++) {
-            printf("%c", map->fields[i][j].tile);
-        }
-        printf("\n");
-    }
-
-}
-
-void display_map_ncurses(Map *map) {
-
-    if (!map) {
-        printf("Error: Can't display map");
-        exit(1);
-    }
-
 //    start_color();
-    init_pair(MONEY_COLOR, COLOR_BLACK, COLOR_YELLOW);
-    init_pair(CAMP_COLOR, COLOR_WHITE, COLOR_GREEN);
+
 
     for (int i = 0; i < map->height; i++) {
         move(i, 0);
