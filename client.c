@@ -11,6 +11,8 @@
 
 int main(void) {
 
+    int pid = getpid();
+
     int sfd = socket(AF_INET, SOCK_STREAM, 0);
     if (0 > sfd) {
         perror("socket");
@@ -31,7 +33,10 @@ int main(void) {
         return -1;
     }
 
-    // start ncurses
+    send(sfd, &pid, sizeof(pid), 0);
+
+
+        // start ncurses
 
     initscr();
 //    raw();

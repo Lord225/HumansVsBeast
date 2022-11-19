@@ -21,7 +21,7 @@ typedef struct Player {
 
 
 
-Player *create_player(unsigned int *player_count, Location spawn_point);
+Player *create_player(unsigned int free_slot, Location spawn_point);
 
 void destroy_player(Player **player);
 

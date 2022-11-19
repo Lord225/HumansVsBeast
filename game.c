@@ -206,3 +206,12 @@ void player_move(Game *game, unsigned int player_id, int key) {
     }
 
 }
+
+unsigned int find_free_player_slot(Game *game) {
+    for (size_t i = 0; i < 4; i++) {
+        if (!game->players[i]) {
+            return i;
+        }
+    }
+    return -1;
+}

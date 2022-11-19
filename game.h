@@ -29,5 +29,6 @@ void display_game_info(Game *game);
 
 void display_game_legend(Game *game);
 
+unsigned int find_free_player_slot(Game *game);
 
 #endif //HUMANSVSBEAST_GAME_H
