@@ -14,7 +14,7 @@ typedef enum Tile {
     COIN = 'c',
     TREASURE = 't',
     LARGE_TREASURE = 'T',
-    DROPPED_TRERASURE = 'D'
+    DROPPED_TRERSURE = 'D'
 } Tile;
 
 typedef struct Field {
