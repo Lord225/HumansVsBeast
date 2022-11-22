@@ -1,10 +1,7 @@
 #ifndef HUMANSVSBEAST_MAP_H
 #define HUMANSVSBEAST_MAP_H
 
-#define PLAYER_COLOR 1
-#define MONEY_COLOR 2
-#define CAMP_COLOR 3
-#define BEAST_COLOR 4
+
 
 typedef enum Tile {
     EMPTY = ' ',

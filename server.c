@@ -12,9 +12,12 @@
 #include "socket.h"
 #include <stdbool.h>
 #include "pthread.h"
+#include "utils.h"
+
+#define DEBUG 1
 
 #define PORT 9002
-#define DEBUG 1
+
 
 typedef struct Server {
     bool server_running;
@@ -36,11 +39,11 @@ void *connection_handlig(void *arg) {
         // accept connection
         int cfd = accept(args.sfd, (struct sockaddr *) &client_info, &client_info_len);
         if (cfd < 0) {
-#ifdef DEBUG
+#if DEBUG
             fprintf(stderr, "[CONN_THERED] [ERROR] accept failed\n");
 #endif
         } else {
-#ifdef DEBUG
+#if DEBUG
             fprintf(stderr, "[CONN_THERED] [INFO] client connected\n");
 #endif
             pthread_mutex_lock(&args.game->players_mutex);
@@ -65,6 +68,7 @@ void *connection_handlig(void *arg) {
     return NULL;
 }
 
+
 int main(void) {
 
     int sfd = create_socket(PORT);
@@ -85,29 +89,9 @@ int main(void) {
 
     pthread_create(&threadConnHandling, NULL, connection_handlig, &server);
 
-//    display_map(map);
+    // initialize ncurses screen
+    init_screen();
 
-//    Player *player1 = create_player(&game->player_count, get_random_free_location(map));
-//
-//    game->players[game->player_count++] = player1;
-
-//  init screen
-    initscr();
-//    raw();
-    noecho();
-    cbreak();
-    curs_set(0);
-    refresh();
-
-    start_color();
-
-
-    refresh();
-//    start_color();
-    init_pair(PLAYER_COLOR, COLOR_WHITE, COLOR_MAGENTA);
-    init_pair(MONEY_COLOR, COLOR_BLACK, COLOR_YELLOW);
-    init_pair(CAMP_COLOR, COLOR_WHITE, COLOR_GREEN);
-    init_pair(BEAST_COLOR, COLOR_WHITE, COLOR_RED);
 
 //    attron(COLOR_PAIR(PLAYER_COLOR));
 //    mvprintw(player1->spawn_point.y, player1->spawn_point.x, "%d", 1);
@@ -115,16 +99,15 @@ int main(void) {
 //    refresh();
 //
 
-    keypad(stdscr, TRUE);
-
 
     display_static_game_info(game);
     display_game_legend(game);
+    refresh();
 
     while (server.server_running) {
         display_non_static_game_info(game);
         display_map(game->map);
-#ifdef DEBUG
+#if DEBUG
         move(game->map->height + 1, 0);
 #endif
 
@@ -153,7 +136,7 @@ int main(void) {
 
 
 
-    endwin(); // end screen
+    done_screen(); // end ncurses screen
 
     destroy_game(&game);
 

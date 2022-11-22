@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <string.h>
+#include "utils.h"
 
 
 Game *create_game(Map *map) {
@@ -16,6 +17,9 @@ Game *create_game(Map *map) {
     game->map = map;
 
     game->player_count = 0;
+    for (int i = 0; i < 4; i++) {
+        game->players[i] = NULL;
+    }
     pthread_mutex_init(&game->players_mutex, NULL);
 
     return game;
