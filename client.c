@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+#include "common.h"
 
 #define PORT 9002
 #define ADDRESS 0x7f000001
@@ -12,6 +13,8 @@
 int main(void) {
 
     int pid = getpid();
+
+    ClientInfo client_info = {0};
 
     int sfd = socket(AF_INET, SOCK_STREAM, 0);
     if (0 > sfd) {
@@ -43,20 +46,29 @@ int main(void) {
     noecho();
     cbreak();
     curs_set(0);
-    timeout(-1);
+//    timeout(-1);
     refresh();
 
     keypad(stdscr, TRUE);
 
+
+    client_info.is_connected = true;
+
+
     while (1) {
-        flushinp();
+//        flushinp();
         int key = getch();
+
+
+        client_info.key = key;
+
+        send(sfd, &client_info, sizeof(ClientInfo), 0);
+//        int response;
+//        recv(sfd, &response, sizeof(response), 0);
+
         if(key == 'q') {
             break;
         }
-        send(sfd, &key, sizeof(key), 0);
-        int response;
-        recv(sfd, &response, sizeof(response), 0);
 
     }
 

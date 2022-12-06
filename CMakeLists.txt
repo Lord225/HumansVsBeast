@@ -31,7 +31,7 @@ find_package(Threads REQUIRED)
 
 include_directories(${CURSES_INCLUDE_DIRS})
 
-add_executable(server server.c map.c map.h player.c player.h game.c game.h utils.c utils.h socket.c socket.h)
+add_executable(server server.c map.c map.h player.c player.h game.c game.h utils.c utils.h socket.c socket.h common.c common.h)
 
 target_link_libraries(server ${CURSES_LIBRARIES} Threads::Threads)
 

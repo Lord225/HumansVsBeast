@@ -15,7 +15,11 @@ typedef struct Player {
     unsigned int coins_found;
     unsigned int coins_brought;
 
+    int last_key;
+    int was_key_sent_last_turn;
+
     pthread_t thread;
+//    pthread_mutex_t player_mutex;
 
 } Player;
 
@@ -23,6 +27,8 @@ typedef struct Player {
 Player *create_player(unsigned int free_slot, Location spawn_point);
 
 void destroy_player(Player **player);
+
+
 
 
 

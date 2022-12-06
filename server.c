@@ -13,6 +13,7 @@
 #include <stdbool.h>
 #include "pthread.h"
 #include "utils.h"
+#include "common.h"
 
 #define DEBUG 1
 
@@ -24,6 +25,41 @@ typedef struct Server {
     int sfd;
     Game *game;
 } Server;
+
+
+void *player_thread(void *arg) {
+
+    Player **p= (Player **) arg;
+    Player *player = *p;
+
+    ClientInfo  client_info = {0};
+    client_info.is_connected = true;
+
+    while(client_info.is_connected) {
+
+        ssize_t bytes_recived = recv(player->cfd, &client_info, sizeof(ClientInfo), 0);
+        if(bytes_recived <= 0) {
+            client_info.is_connected = false;
+            destroy_player(p);
+        }
+        player->was_key_sent_last_turn=true;
+        player->last_key = client_info.key;
+
+        if(player->last_key=='q') {
+            client_info.is_connected = false;
+            destroy_player(p);
+        }
+//        printw("bytes_recived: %d", (int)bytes_recived);
+//        player_move(player, client_info.key);
+
+//        send(player->cfd, (void*)1, sizeof(int), 0);
+//        printf("player loc y %ud", player->current_location.y);
+
+    }
+
+
+    return NULL;
+}
 
 
 void *connection_handlig(void *arg) {
@@ -39,14 +75,14 @@ void *connection_handlig(void *arg) {
         // accept connection
         int cfd = accept(args.sfd, (struct sockaddr *) &client_info, &client_info_len);
         if (cfd < 0) {
-#if DEBUG
-            fprintf(stderr, "[CONN_THERED] [ERROR] accept failed\n");
-#endif
+//#if DEBUG
+//            fprintf(stderr, "[CONN_THERED] [ERROR] accept failed\n");
+//#endif
         } else {
-#if DEBUG
-            fprintf(stderr, "[CONN_THERED] [INFO] client connected\n");
-#endif
-            pthread_mutex_lock(&args.game->players_mutex);
+//#if DEBUG
+//            fprintf(stderr, "[CONN_THERED] [INFO] client connected\n");
+//#endif
+            pthread_mutex_lock(&args.game->game_mutex);
 
             if (args.game->player_count < 4) {
                 int pid;
@@ -55,18 +91,26 @@ void *connection_handlig(void *arg) {
                 Player *player = create_player(free_slot, get_random_free_location(args.game->map));
                 args.game->players[free_slot] = player;
                 args.game->players[free_slot]->pid = pid;
+                args.game->players[free_slot]->cfd = cfd;
                 args.game->player_count++;
+                // inint mutex
+//                pthread_mutex_init(&args.game->players[free_slot]->player_mutex, NULL);
+
+
+                pthread_create(&player->thread, NULL, player_thread, &args.game->players[free_slot]);
 
             } else {
                 fprintf(stderr, "[CONN_THERED] [INFO] game is full\n");
             }
-
-            pthread_mutex_unlock(&args.game->players_mutex);
+            pthread_mutex_unlock(&args.game->game_mutex);
 
         }
     }
     return NULL;
 }
+
+
+Server server;
 
 
 int main(void) {
@@ -83,7 +127,11 @@ int main(void) {
 
 //    ConnHandlingArgs args = {sfd, game};
 
-    Server server = {true, sfd, game};
+//    Server server = {true, sfd, game};
+
+    server.server_running = true;
+    server.sfd = sfd;
+    server.game = game;
 
     pthread_t threadConnHandling;
 
@@ -105,15 +153,23 @@ int main(void) {
     refresh();
 
     while (server.server_running) {
-        display_non_static_game_info(game);
+
         display_map(game->map);
-#if DEBUG
-        move(game->map->height + 1, 0);
-#endif
 
+
+
+        pthread_mutex_lock(&game->game_mutex);
+        move_players(game);
+        display_players_on_map(game);
+        display_non_static_game_info(game);
         refresh();
+        pthread_mutex_unlock(&game->game_mutex);
 
+//#if DEBUG
+//        move(game->map->height + 1, 0);
+//#endif
         sleep(1);
+
         game->round_number += 1;
     }
 

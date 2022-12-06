@@ -20,7 +20,7 @@ Game *create_game(Map *map) {
     for (int i = 0; i < 4; i++) {
         game->players[i] = NULL;
     }
-    pthread_mutex_init(&game->players_mutex, NULL);
+    pthread_mutex_init(&game->game_mutex, NULL);
 
     return game;
 }
@@ -67,18 +67,23 @@ void display_game_legend(Game *game) {
 
 void display_non_static_game_info(Game *game) {
 
+
+
     int column = game->map->width + 3;
     int row = 1;
     row += 1;
-    mvprintw(row++, column + 1 + strlen("Campsite X/Y: "), "%d/%d", game->campsite_location.x,
+
+
+
+    mvprintw(row++, column + 1 + strlen("Campsite X/Y: "), "%02u/%02u", game->campsite_location.x,
              game->campsite_location.y);
-    mvprintw(row++, column + 1, "Round number: %d", game->round_number);
+    mvprintw(row++, column + 1, "Round number: %u", game->round_number);
     row += 2;
     for (int i = 0; i < 4; i++) {
         if (game->players[i]) {
-            mvprintw(row, column + 4 + 9 * (i + 1), "%d", game->players[i]->pid);
+            mvprintw(row, column + 4 + 9 * (i + 1), "%u", game->players[i]->pid);
         } else {
-            mvprintw(row, column + 4 + 9 * (i + 1), "-");
+            mvprintw(row, column + 4 + 9 * (i + 1), "-    ");
         }
     }
     row += 1;
@@ -86,24 +91,24 @@ void display_non_static_game_info(Game *game) {
         if (game->players[i]) {
             mvprintw(row, column + 4 + 9 * (i + 1), "%s", "HUMAN");
         } else {
-            mvprintw(row, column + 4 + 9 * (i + 1), "-");
+            mvprintw(row, column + 4 + 9 * (i + 1), "-    ");
         }
     }
     row += 1;
     for (int i = 0; i < 4; i++) {
         if (game->players[i]) {
-            mvprintw(row, column + 4 + 9 * (i + 1), "%d/%d", game->players[i]->current_location.x,
+            mvprintw(row, column + 4 + 9 * (i + 1), "%02u/%02u", game->players[i]->current_location.x,
                      game->players[i]->current_location.y);
         } else {
-            mvprintw(row, column + 4 + 9 * (i + 1), "-/-");
+            mvprintw(row, column + 4 + 9 * (i + 1), "--/--");
         }
     }
     row += 1;
     for (int i = 0; i < 4; i++) {
         if (game->players[i]) {
-            mvprintw(row, column + 4 + 9 * (i + 1), "%d", game->players[i]->deaths);
+            mvprintw(row, column + 4 + 9 * (i + 1), "%u", game->players[i]->deaths);
         } else {
-            mvprintw(row, column + 4 + 9 * (i + 1), "-");
+            mvprintw(row, column + 4 + 9 * (i + 1), "-    ");
         }
     }
 
@@ -111,18 +116,18 @@ void display_non_static_game_info(Game *game) {
 
     for (int i = 0; i < 4; i++) {
         if (game->players[i]) {
-            mvprintw(row, column + 4 + 9 * (i + 1), "%d", game->players[i]->coins_found);
+            mvprintw(row, column + 4 + 9 * (i + 1), "%u", game->players[i]->coins_found);
         } else {
-            mvprintw(row, column + 4 + 9 * (i + 1), "-");
+            mvprintw(row, column + 4 + 9 * (i + 1), "-    ");
         }
     }
 
     row += 1;
     for (int i = 0; i < 4; i++) {
         if (game->players[i]) {
-            mvprintw(row, column + 4 + 9 * (i + 1), "%d", game->players[i]->coins_brought);
+            mvprintw(row, column + 4 + 9 * (i + 1), "%u", game->players[i]->coins_brought);
         } else {
-            mvprintw(row, column + 4 + 9 * (i + 1), "-");
+            mvprintw(row, column + 4 + 9 * (i + 1), "-    ");
         }
     }
 
@@ -158,58 +163,12 @@ void destroy_game(Game **game) {
         destroy_player(&(*game)->players[i]);
     }
 
-    pthread_mutex_destroy(&(*game)->players_mutex);
+    pthread_mutex_destroy(&(*game)->game_mutex);
 
     free(*game);
     *game = NULL;
 }
 
-void player_move(Game *game, unsigned int player_id, int key) {
-
-    Player *player = game->players[player_id];
-
-    switch (key) {
-        case KEY_UP:
-            if (game->map->fields[player->current_location.y - 1][player->current_location.x].tile != WALL) {
-                mvprintw(player->current_location.y, player->current_location.x, " ");
-                player->current_location.y -= 1;
-                attron(COLOR_PAIR(PLAYER_COLOR));
-                mvprintw(player->current_location.y, player->current_location.x, "%d", player_id + 1);
-                attroff(COLOR_PAIR(PLAYER_COLOR));
-            }
-            break;
-        case KEY_DOWN:
-            if (game->map->fields[player->current_location.y + 1][player->current_location.x].tile != WALL) {
-                mvprintw(player->current_location.y, player->current_location.x, " ");
-                player->current_location.y += 1;
-                attron(COLOR_PAIR(PLAYER_COLOR));
-                mvprintw(player->current_location.y, player->current_location.x, "%d", player_id + 1);
-                attroff(COLOR_PAIR(PLAYER_COLOR));
-            }
-            break;
-        case KEY_LEFT:
-            if (game->map->fields[player->current_location.y][player->current_location.x - 1].tile != WALL) {
-                mvprintw(player->current_location.y, player->current_location.x, " ");
-                player->current_location.x -= 1;
-                attron(COLOR_PAIR(PLAYER_COLOR));
-                mvprintw(player->current_location.y, player->current_location.x, "%d", player_id + 1);
-                attroff(COLOR_PAIR(PLAYER_COLOR));
-            }
-            break;
-        case KEY_RIGHT:
-            if (game->map->fields[player->current_location.y][player->current_location.x + 1].tile != WALL) {
-                mvprintw(player->current_location.y, player->current_location.x, " ");
-                player->current_location.x += 1;
-                attron(COLOR_PAIR(PLAYER_COLOR));
-                mvprintw(player->current_location.y, player->current_location.x, "%d", player_id + 1);
-                attroff(COLOR_PAIR(PLAYER_COLOR));
-            }
-            break;
-        default:
-            break;
-    }
-
-}
 
 unsigned int find_free_player_slot(Game *game) {
     for (size_t i = 0; i < 4; i++) {
@@ -218,4 +177,87 @@ unsigned int find_free_player_slot(Game *game) {
         }
     }
     return -1;
+}
+
+void spawn_player(Game *game, unsigned int player_id) {
+
+    mvprintw(game->players[player_id]->spawn_point.y, game->players[player_id]->spawn_point.x, "%d",
+             player_id + 1);
+
+}
+
+void display_players_on_map(Game *game) {
+
+    attron(COLOR_PAIR(PLAYER_COLOR));
+    for (size_t i = 0; i < game->player_count; i++) {
+        if (game->players[i]) {
+            mvprintw(game->players[i]->current_location.y, game->players[i]->current_location.x, "%d",
+                     i + 1);
+        }
+    }
+    attroff(COLOR_PAIR(PLAYER_COLOR));
+}
+
+void move_players(Game *game) {
+
+    for (size_t i = 0; i < game->player_count; i++) {
+        if (game->players[i]) {
+            player_move(game->map, game->players[i]);
+        }
+    }
+}
+
+void player_move(Map *map, Player *player) {
+
+    Location new_location = player->current_location;
+
+    if (player->was_key_sent_last_turn) {
+        switch (player->last_key) {
+            case KEY_UP:
+                new_location.y -= 1;
+
+                break;
+            case KEY_DOWN:
+                new_location.y += 1;
+
+                break;
+            case KEY_LEFT:
+
+                new_location.x -= 1;
+
+                break;
+            case KEY_RIGHT:
+
+                new_location.x += 1;
+
+                break;
+            default:
+                break;
+        }
+
+        int is_valid_move = validate_player_move(map, player, new_location);
+        if(is_valid_move) {
+            player->current_location = new_location;
+        }
+
+    }
+
+
+    player->was_key_sent_last_turn = false;
+
+}
+
+int validate_player_move(Map *map, Player *player, Location new_location) {
+
+//    if (new_location.x < 0 || new_location.x >= map->width) {
+//        return 0;
+//    }
+//    if (new_location.y < 0 || new_location.y >= map->height) {
+//        return 0;
+//    }
+    if (map->fields[new_location.y][new_location.x].tile == WALL) {
+        return 0;
+    }
+    return 1;
+
 }

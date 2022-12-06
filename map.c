@@ -118,3 +118,4 @@ Location get_random_free_location(Map *map) {
 
     return location;
 }
+

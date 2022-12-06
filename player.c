@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 //#include "map.h"
+#include <stdbool.h>
+#include <unistd.h>
 
 
 Player *create_player(unsigned int free_slot, Location spawn_point) {
@@ -21,6 +23,8 @@ Player *create_player(unsigned int free_slot, Location spawn_point) {
 
     player->spawn_point = player->current_location = spawn_point;
 
+    player->was_key_sent_last_turn=false;
+
     return player;
 }
 
@@ -30,8 +34,12 @@ void destroy_player(Player **player) {
         return;
     }
 
+    pthread_join((*player)->thread, NULL);
+    close((*player)->cfd);
+
     free(*player);
     *player = NULL;
+
 }
 
 
