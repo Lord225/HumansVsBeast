@@ -32,12 +32,12 @@ void *player_thread(void *arg) {
     Player **p= (Player **) arg;
     Player *player = *p;
 
-    ClientInfo  client_info = {0};
+    ClientInfoForServer  client_info = {0};
     client_info.is_connected = true;
 
     while(client_info.is_connected) {
 
-        ssize_t bytes_recived = recv(player->cfd, &client_info, sizeof(ClientInfo), 0);
+        ssize_t bytes_recived = recv(player->cfd, &client_info, sizeof(ClientInfoForServer), 0);
         if(bytes_recived <= 0) {
             client_info.is_connected = false;
             destroy_player(p);
@@ -100,7 +100,7 @@ void *connection_handlig(void *arg) {
                 pthread_create(&player->thread, NULL, player_thread, &args.game->players[free_slot]);
 
             } else {
-                fprintf(stderr, "[CONN_THERED] [INFO] game is full\n");
+//                fprintf(stderr, "[CONN_THERED] [INFO] game is full\n");
             }
             pthread_mutex_unlock(&args.game->game_mutex);
 
@@ -109,6 +109,16 @@ void *connection_handlig(void *arg) {
     return NULL;
 }
 
+void *serverKeyboardThread(void *arg) {
+    Server args = *(Server *) arg;
+    while (args.server_running) {
+        int key = getch();
+        if (key == 'q') {
+            args.server_running = false;
+        }
+    }
+    return NULL;
+}
 
 Server server;
 

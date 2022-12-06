@@ -14,7 +14,7 @@ int main(void) {
 
     int pid = getpid();
 
-    ClientInfo client_info = {0};
+    ClientInfoForServer client_info = {0};
 
     int sfd = socket(AF_INET, SOCK_STREAM, 0);
     if (0 > sfd) {
@@ -62,7 +62,7 @@ int main(void) {
 
         client_info.key = key;
 
-        send(sfd, &client_info, sizeof(ClientInfo), 0);
+        send(sfd, &client_info, sizeof(ClientInfoForServer), 0);
 //        int response;
 //        recv(sfd, &response, sizeof(response), 0);
 

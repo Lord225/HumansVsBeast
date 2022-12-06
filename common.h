@@ -7,16 +7,17 @@
 
 #include <stdbool.h>
 
-typedef struct ClientInfo {
+typedef struct ClientInfoForServer {
     int is_connected;
     int key;
-} ClientInfo;
+} ClientInfoForServer;
 
-typedef struct ServerInfo {
+typedef struct ServerInfoForPlayer {
     bool connected;
     bool serverClosed;
     bool server_is_full;
     bool disconnect;
-} ServerInfo;
+    int cfd;
+} ServerInfoForPlayer;
 
 #endif //HUMANSVSBEAST_COMMON_H
