@@ -280,9 +280,22 @@ int send_map_data_to_player(Game *game, Player *player) {
     player_sight.cord_x = player->current_location.x;
     player_sight.cord_y = player->current_location.y;
 
+    server_info.player_number = player->id;
+    server_info.server_pid = getpid();
+    server_info.deaths = player->deaths;
+    server_info.coins_found = player->coins_found;
+    server_info.coins_brought = player->coins_brought;
+
     for(int i=0;i<PLAYER_SIGHT;i++){
         for(int j=0;j<PLAYER_SIGHT;j++){
-            player_sight.fields[i][j]=game->map->fields[player->current_location.y-PLAYER_SIGHT/2+i][player->current_location.x-PLAYER_SIGHT/2+j];
+            int first = player_sight.cord_y - PLAYER_SIGHT/2 + i;
+            int second = player_sight.cord_x - PLAYER_SIGHT/2 + j;
+            if(first >=0 && second >=0) {
+                player_sight.fields[i][j]=game->map->fields[first][second];
+            } else {
+                player_sight.fields[i][j].tile = WALL;
+            }
+
         }
     }
 

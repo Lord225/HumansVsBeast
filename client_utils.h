@@ -7,7 +7,7 @@
 
 #include "common.h"
 
-void display_player_map(PlayerSight *player_sight);
+void display_player_map(ServerInfoForPlayer *server_info);
 
 void display_stats(ServerInfoForPlayer *server_info_for_player);
 

@@ -7,23 +7,45 @@
 #include "ncurses.h"
 #include "utils.h"
 
-void display_player_map(PlayerSight *player_sight) {
-//    PlayerSight *player_sight = (PlayerSight *) arg;
+void display_player_map(ServerInfoForPlayer *server_info_for_player) {
+    PlayerSight *player_sight = &server_info_for_player->player_sight;
 
-    for(int i=0;i<player_sight->radius;i++) {
-        for(int j=0;j<player_sight->radius;j++) {
+    for (int i = 0; i < player_sight->radius; i++) {
+        for (int j = 0; j < player_sight->radius; j++) {
+            int first = player_sight->cord_y - player_sight->radius / 2 + i;
+            int second = player_sight->cord_x - player_sight->radius / 2 + j;
+            if (first >= 0 && second >= 0) {
+                move(first, second);
+                if (player_sight->fields[i][j].tile == WALL) {
+                    attron(A_REVERSE);
+                    printw(" ");
+                    attroff(A_REVERSE);
+                } else if (player_sight->fields[i][j].tile == COIN || player_sight->fields[i][j].tile == TREASURE ||
+                           player_sight->fields[i][j].tile == LARGE_TREASURE) {
+                    attron(COLOR_PAIR(2));
+                    printw("%c", player_sight->fields[i][j].tile);
+                    attroff(COLOR_PAIR(1));
+                } else if (player_sight->fields[i][j].tile == CAMPSITE) {
+                    attron(COLOR_PAIR(3));
+                    printw("%c", player_sight->fields[i][j].tile);
+                    attroff(COLOR_PAIR(3));
+                } else {
+                    printw("%c", player_sight->fields[i][j].tile);
+                }
+            }
 
-            mvprintw(player_sight->cord_y-player_sight->radius/2+i,player_sight->cord_x-player_sight->radius/2+j, "%c", player_sight->fields[i][j].tile);
         }
     }
-
+    attron(COLOR_PAIR(PLAYER_COLOR));
+    mvprintw(player_sight->cord_y, player_sight->cord_x, "%d", server_info_for_player->player_number);
+    attroff(COLOR_PAIR(PLAYER_COLOR));
 
 //    return NULL;
 }
 
 void display_stats(ServerInfoForPlayer *server_info_for_player) {
 
-    int column = server_info_for_player->map_width+3;
+    int column = server_info_for_player->map_width + 3;
     int row = 1;
     mvprintw(row++, column, "Server's PID: %d", server_info_for_player->server_pid);
     mvprintw(row++, column + 1, "Campsite X/Y:");
@@ -31,13 +53,14 @@ void display_stats(ServerInfoForPlayer *server_info_for_player) {
     row += 1;
     mvprintw(row++, column, "Player");
     mvprintw(row++, column + 1, "Number:     %d", server_info_for_player->player_number);
-    mvprintw(row++, column + 1, "Type:       %s","HUMAN");
-    mvprintw(row++, column + 1, "Curr X/Y    %d/%d", server_info_for_player->player_sight.cord_x, server_info_for_player->player_sight.cord_y);
+    mvprintw(row++, column + 1, "Type:       %s", "HUMAN");
+    mvprintw(row++, column + 1, "Curr X/Y    %d/%d", server_info_for_player->player_sight.cord_x,
+             server_info_for_player->player_sight.cord_y);
     mvprintw(row++, column + 1, "Deaths      %d", server_info_for_player->deaths);
     row += 1;
     mvprintw(row++, column + 1, "Coins");
     mvprintw(row++, column + 5, "carried %d", server_info_for_player->coins_found);
-    mvprintw(row++, column + 5, "brought %d",server_info_for_player->coins_brought);
+    mvprintw(row++, column + 5, "brought %d", server_info_for_player->coins_brought);
 
     display_game_legend(server_info_for_player->map_width, server_info_for_player->map_height);
 }

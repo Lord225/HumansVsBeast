@@ -32,7 +32,7 @@ void *listen_for_server_info(void *arg) {
         }
 
         erase();
-        display_player_map(&server_info.player_sight);
+        display_player_map(&server_info);
         display_stats(&server_info);
         refresh();
     }
