@@ -63,9 +63,9 @@ void *player_thread(void *arg) {
 
 
 void *connection_handlig(void *arg) {
-    Server args = *(Server *) arg;
+    Server *args = (Server *) arg;
 
-    while (args.server_running) {
+    while (args->server_running) {
 
 
         // define client address
@@ -73,7 +73,7 @@ void *connection_handlig(void *arg) {
         socklen_t client_info_len = sizeof(client_info);
 
         // accept connection
-        int cfd = accept(args.sfd, (struct sockaddr *) &client_info, &client_info_len);
+        int cfd = accept(args->sfd, (struct sockaddr *) &client_info, &client_info_len);
         if (cfd < 0) {
 //#if DEBUG
 //            fprintf(stderr, "[CONN_THERED] [ERROR] accept failed\n");
@@ -82,9 +82,9 @@ void *connection_handlig(void *arg) {
 //#if DEBUG
 //            fprintf(stderr, "[CONN_THERED] [INFO] client connected\n");
 //#endif
-            pthread_mutex_lock(&args.game->game_mutex);
+            pthread_mutex_lock(&args->game->game_mutex);
 
-            int free_slot = find_free_player_slot(args.game);
+            int free_slot = find_free_player_slot(args->game);
 
             if (free_slot != -1) {
                 struct ServerInfoForPlayer server_info = {0};
@@ -94,17 +94,17 @@ void *connection_handlig(void *arg) {
                 int pid;
                 recv(cfd, &pid, sizeof(pid), 0);
 
-                Player *player = create_player(free_slot, get_random_free_location(args.game->map));
-                args.game->players[free_slot] = player;
-                args.game->players[free_slot]->pid = pid;
-                args.game->players[free_slot]->cfd = cfd;
-                args.game->player_count++;
+                Player *player = create_player(free_slot, get_random_free_location(args->game->map));
+                args->game->players[free_slot] = player;
+                args->game->players[free_slot]->pid = pid;
+                args->game->players[free_slot]->cfd = cfd;
+                args->game->player_count++;
                 // inint mutex
 //                pthread_mutex_init(&args.game->players[free_slot]->player_mutex, NULL);
 
 
 
-                pthread_create(&player->thread, NULL, player_thread, &args.game->players[free_slot]);
+                pthread_create(&player->thread, NULL, player_thread, &args->game->players[free_slot]);
 
             } else {
                 struct ServerInfoForPlayer server_info = {0};
@@ -113,65 +113,20 @@ void *connection_handlig(void *arg) {
                 send(cfd, (struct ServerInfoForPlayer *) &server_info, sizeof(struct ServerInfoForPlayer), 0);
 
             }
-            pthread_mutex_unlock(&args.game->game_mutex);
+            pthread_mutex_unlock(&args->game->game_mutex);
 
         }
     }
     return NULL;
 }
 
-//void *serverKeyboardThread(void *arg) {
-//    Server args = *(Server *) arg;
-//    while (args.server_running) {
-//        int key = getch();
-//        if (key == 'q') {
-//            args.server_running = false;
-//        }
-//    }
-//    return NULL;
-//}
+void *gameLoop(void *arg) {
 
-Server server;
+    Server *args = (Server *) arg;
 
+    Game *game = args->game;
 
-int main(void) {
-
-    int sfd = create_socket(PORT);
-    if (0 > sfd) {
-        return -1;
-    }
-
-
-    Map *map = load_map();
-
-    Game *game = create_game(map);
-
-//    ConnHandlingArgs args = {sfd, game};
-
-//    Server server = {true, sfd, game};
-
-    server.server_running = true;
-    server.sfd = sfd;
-    server.game = game;
-
-    pthread_t threadConnHandling;
-
-//    pthread_t threadServerKeyboard;
-
-    pthread_create(&threadConnHandling, NULL, connection_handlig, &server);
-
-
-    // initialize ncurses screen
-    init_screen();
-
-//    pthread_create(&threadServerKeyboard, NULL, serverKeyboardThread, &server);
-
-
-    display_static_game_info(game);
-    display_game_legend(game);
-    refresh();
-
-    while (server.server_running) {
+    while (args->server_running) {
 
         display_map(game->map);
 
@@ -191,10 +146,74 @@ int main(void) {
         usleep(500000);
 
         game->round_number += 1;
+
+    }
+
+    return NULL;
+}
+
+
+
+
+
+int main(void) {
+
+    int sfd = create_socket(PORT);
+    if (0 > sfd) {
+        return -1;
     }
 
 
+    Map *map = load_map();
+
+    Game *game = create_game(map);
+
+//    ConnHandlingArgs args = {sfd, game};
+
+//    Server server = {true, sfd, game};
+
+    Server server;
+    server.server_running = true;
+    server.sfd = sfd;
+    server.game = game;
+
+    pthread_t threadConnHandling;
+    pthread_t threadGameLoop;
+
+//    pthread_t threadServerKeyboard;
+
+    pthread_create(&threadConnHandling, NULL, connection_handlig, &server);
+
+
+    // initialize ncurses screen
+    init_screen();
+
+    display_static_game_info(game);
+    display_game_legend(game);
+    refresh();
+
+    pthread_create(&threadGameLoop, NULL, gameLoop, &server);
+
+    while (server.server_running) {
+        int key = getch();
+        if (key == 'q') {
+            server.server_running = false;
+        }
+    }
+
+    pthread_join(threadGameLoop, NULL);
+    pthread_cancel(threadConnHandling);
+    pthread_join(threadConnHandling, NULL);
+
+
     done_screen(); // end ncurses screen
+//    printf("server stopped\n");
+
+
+//    printf("threadConnHandling joined\n");
+
+//    printf("threadGameLoop joined\n");
+
 
     destroy_game(&game);
 

@@ -13,7 +13,7 @@
 #define PORT 9002
 #define ADDRESS 0x7f000001
 
-
+bool is_running = true;
 
 void *listen_for_server_info(void *arg) {
 
@@ -22,11 +22,11 @@ void *listen_for_server_info(void *arg) {
 //    ServerInfoForPlayer *server_info = {0};
     ServerInfoForPlayer server_info = {0};
 
-    while (1) {
+    while (is_running) {
 
         ssize_t recvd = recv(*sfd, &server_info, sizeof(ServerInfoForPlayer), 0);
         if (recvd <= 0) {
-//            server->server_running = false;
+            is_running = false;
 
             break;
         }
@@ -75,7 +75,7 @@ int main(void) {
 
     recv(sfd, &server_message, sizeof(server_message), 0);
 
-    if(server_message.server_is_full) {
+    if (server_message.server_is_full) {
         printf("Server is full. Try again later.\n");
         close(sfd);
         return -1;
@@ -84,7 +84,7 @@ int main(void) {
     send(sfd, &pid, sizeof(pid), 0);
 
 
-        // start ncurses
+    // start ncurses
 
     init_screen();
 //    printw("Welcome to the game!\n");
@@ -95,7 +95,7 @@ int main(void) {
     pthread_create(&thread, NULL, listen_for_server_info, (void *) &sfd);
 
 
-    while (1) {
+    while (is_running) {
 //        flushinp();
         int key = getch();
 
@@ -106,12 +106,11 @@ int main(void) {
 //        int response;
 //        recv(sfd, &response, sizeof(response), 0);
 
-        if(key == 'q') {
+        if (key == 'q') {
             break;
         }
 
     }
-
 
 
     done_screen();

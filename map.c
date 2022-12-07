@@ -15,7 +15,7 @@ Map *load_map(void) {
         exit(1);
     }
 
-    Map *map = malloc(sizeof(Map));
+    Map *map = calloc(1,sizeof(Map));
     if (!map) {
         printf("Error: Can't allocate memory for map");
         exit(1);
@@ -27,13 +27,13 @@ Map *load_map(void) {
 
     fscanf(f, "%d %d\n", &map->height, &map->width);
 
-    map->fields = malloc(sizeof(Field *) * map->height);
+    map->fields = calloc(map->height,sizeof(Field *));
     if (!map->fields) {
         printf("Error: Can't allocate memory for map");
         exit(1);
     }
     for (int i = 0; i < map->height; i++) {
-        map->fields[i] = malloc(sizeof(Field) * map->width);
+        map->fields[i] = calloc(map->width,sizeof(Field));
         if (!map->fields[i]) {
             printf("Error: Can't allocate memory for map");
             exit(1);
