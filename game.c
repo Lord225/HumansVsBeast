@@ -8,7 +8,9 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <string.h>
+#include <sys/socket.h>
 #include "utils.h"
+#include "common.h"
 
 
 Game *create_game(Map *map) {
@@ -159,8 +161,10 @@ void destroy_game(Game **game) {
 
     destroy_map(&(*game)->map);
 
-    for (size_t i = 0; i < (*game)->player_count; i++) {
-        destroy_player(&(*game)->players[i]);
+    for (size_t i = 0; i < MAX_PLAYERS; i++) {
+        if((*game)->players[i]) {
+            destroy_player(&(*game)->players[i]);
+        }
     }
 
     pthread_mutex_destroy(&(*game)->game_mutex);
@@ -170,8 +174,8 @@ void destroy_game(Game **game) {
 }
 
 
-unsigned int find_free_player_slot(Game *game) {
-    for (size_t i = 0; i < 4; i++) {
+int find_free_player_slot(Game *game) {
+    for (int i = 0; i < 4; i++) {
         if (!game->players[i]) {
             return i;
         }
@@ -189,7 +193,7 @@ void spawn_player(Game *game, unsigned int player_id) {
 void display_players_on_map(Game *game) {
 
     attron(COLOR_PAIR(PLAYER_COLOR));
-    for (size_t i = 0; i < game->player_count; i++) {
+    for (size_t i = 0; i < MAX_PLAYERS; i++) {
         if (game->players[i]) {
             mvprintw(game->players[i]->current_location.y, game->players[i]->current_location.x, "%d",
                      i + 1);
@@ -200,7 +204,7 @@ void display_players_on_map(Game *game) {
 
 void move_players(Game *game) {
 
-    for (size_t i = 0; i < game->player_count; i++) {
+    for (size_t i = 0; i < MAX_PLAYERS; i++) {
         if (game->players[i]) {
             player_move(game->map, game->players[i]);
         }
@@ -259,5 +263,43 @@ int validate_player_move(Map *map, Player *player, Location new_location) {
         return 0;
     }
     return 1;
+
+}
+
+
+
+int send_map_data_to_player(Game *game, Player *player) {
+
+    ServerInfoForPlayer server_info= {0};
+    server_info.map_width = game->map->width;
+    server_info.map_height = game->map->height;
+
+    PlayerSight player_sight = {0};
+
+    player_sight.radius= PLAYER_SIGHT;
+    player_sight.cord_x = player->current_location.x;
+    player_sight.cord_y = player->current_location.y;
+
+    for(int i=0;i<PLAYER_SIGHT;i++){
+        for(int j=0;j<PLAYER_SIGHT;j++){
+            player_sight.fields[i][j]=game->map->fields[player->current_location.y-PLAYER_SIGHT/2+i][player->current_location.x-PLAYER_SIGHT/2+j];
+        }
+    }
+
+    server_info.player_sight = player_sight;
+
+    send(player->cfd, &server_info, sizeof(server_info), 0);
+
+    return 0;
+}
+
+int send_map_data_to_all_players(Game *game) {
+
+    for (size_t i = 0; i < MAX_PLAYERS; i++) {
+        if (game->players[i]) {
+            send_map_data_to_player(game, game->players[i]);
+        }
+    }
+    return 0;
 
 }

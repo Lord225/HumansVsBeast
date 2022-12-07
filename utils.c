@@ -18,6 +18,7 @@ void init_screen(void) {
     keypad(stdscr, TRUE);
 
 }
+
 void done_screen(void) {
     endwin();
 }

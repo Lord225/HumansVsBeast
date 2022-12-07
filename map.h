@@ -1,7 +1,7 @@
 #ifndef HUMANSVSBEAST_MAP_H
 #define HUMANSVSBEAST_MAP_H
 
-
+#define PLAYER_SIGHT 5
 
 typedef enum Tile {
     EMPTY = ' ',
@@ -28,6 +28,13 @@ typedef struct Location {
     unsigned int x;
     unsigned int y;
 } Location;
+
+
+typedef struct DroppedTreasure {
+    Location location;
+    Tile tile;
+    int value;
+} DroppedTreasure;
 
 Map *load_map(void);
 

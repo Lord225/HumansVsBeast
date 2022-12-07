@@ -17,6 +17,8 @@ typedef struct Player {
 
     int last_key;
     int was_key_sent_last_turn;
+    int is_stunned;
+    int turn_passed;
 
     pthread_t thread;
 //    pthread_mutex_t player_mutex;

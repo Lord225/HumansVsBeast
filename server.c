@@ -32,7 +32,7 @@ void *player_thread(void *arg) {
     Player **p= (Player **) arg;
     Player *player = *p;
 
-    ClientInfoForServer  client_info = {0};
+    ClientInfoForServer client_info = {0};
     client_info.is_connected = true;
 
     while(client_info.is_connected) {
@@ -84,10 +84,16 @@ void *connection_handlig(void *arg) {
 //#endif
             pthread_mutex_lock(&args.game->game_mutex);
 
-            if (args.game->player_count < 4) {
+            int free_slot = find_free_player_slot(args.game);
+
+            if (free_slot!=-1) {
+                struct ServerInfoForPlayer server_info = {0};
+                server_info.server_is_full = false;
+                send(cfd, &server_info, sizeof(ServerInfoForPlayer), 0);
+
                 int pid;
                 recv(cfd, &pid, sizeof(pid), 0);
-                unsigned int free_slot = find_free_player_slot(args.game);
+
                 Player *player = create_player(free_slot, get_random_free_location(args.game->map));
                 args.game->players[free_slot] = player;
                 args.game->players[free_slot]->pid = pid;
@@ -97,10 +103,15 @@ void *connection_handlig(void *arg) {
 //                pthread_mutex_init(&args.game->players[free_slot]->player_mutex, NULL);
 
 
+
                 pthread_create(&player->thread, NULL, player_thread, &args.game->players[free_slot]);
 
             } else {
-//                fprintf(stderr, "[CONN_THERED] [INFO] game is full\n");
+                struct ServerInfoForPlayer server_info = {0};
+                server_info.server_is_full = true;
+
+                send(cfd, (struct ServerInfoForPlayer *) &server_info, sizeof(struct ServerInfoForPlayer), 0);
+
             }
             pthread_mutex_unlock(&args.game->game_mutex);
 
@@ -170,6 +181,7 @@ int main(void) {
 
         pthread_mutex_lock(&game->game_mutex);
         move_players(game);
+        send_map_data_to_all_players(game);
         display_players_on_map(game);
         display_non_static_game_info(game);
         refresh();

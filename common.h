@@ -6,6 +6,14 @@
 #define HUMANSVSBEAST_COMMON_H
 
 #include <stdbool.h>
+#include "map.h"
+
+typedef struct PlayerSight {
+    Field fields[PLAYER_SIGHT][PLAYER_SIGHT];
+    int radius;
+    int cord_x;
+    int cord_y;
+} PlayerSight;
 
 typedef struct ClientInfoForServer {
     int is_connected;
@@ -18,6 +26,17 @@ typedef struct ServerInfoForPlayer {
     bool server_is_full;
     bool disconnect;
     int cfd;
+    PlayerSight player_sight;
+    int map_height;
+    int map_width;
+    int server_pid;
+    int round_number;
+    int deaths;
+    int coins_found;
+    int coins_brought;
+    int player_number;
 } ServerInfoForPlayer;
+
+
 
 #endif //HUMANSVSBEAST_COMMON_H

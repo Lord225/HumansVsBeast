@@ -31,7 +31,7 @@ void display_game_info(Game *game);
 
 void display_game_legend(Game *game);
 
-unsigned int find_free_player_slot(Game *game);
+int find_free_player_slot(Game *game);
 
 void spawn_player(Game *game, unsigned int player_id);
 
@@ -42,5 +42,9 @@ void player_move(Map *map, Player *player);
 void move_players(Game *game);
 
 int validate_player_move(Map *map, Player *player, Location new_location);
+
+int send_map_data_to_player(Game *game, Player *player);
+
+int send_map_data_to_all_players(Game *game);
 
 #endif //HUMANSVSBEAST_GAME_H
