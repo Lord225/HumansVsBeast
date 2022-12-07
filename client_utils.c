@@ -14,7 +14,7 @@ void display_player_map(ServerInfoForPlayer *server_info_for_player) {
         for (int j = 0; j < player_sight->radius; j++) {
             int first = player_sight->cord_y - player_sight->radius / 2 + i;
             int second = player_sight->cord_x - player_sight->radius / 2 + j;
-            if (first >= 0 && second >= 0) {
+            if (first >= 0 && second >= 0 && first < server_info_for_player->map_height && second < server_info_for_player->map_width) {
                 move(first, second);
                 if (player_sight->fields[i][j].tile == WALL) {
                     attron(A_REVERSE);
@@ -49,7 +49,7 @@ void display_stats(ServerInfoForPlayer *server_info_for_player) {
     int row = 1;
     mvprintw(row++, column, "Server's PID: %d", server_info_for_player->server_pid);
     mvprintw(row++, column + 1, "Campsite X/Y:");
-    mvprintw(row++, column + 1, "Round number:");
+    mvprintw(row++, column + 1, "Round number: %d", server_info_for_player->round_number);
     row += 1;
     mvprintw(row++, column, "Player");
     mvprintw(row++, column + 1, "Number:     %d", server_info_for_player->player_number);
@@ -58,9 +58,9 @@ void display_stats(ServerInfoForPlayer *server_info_for_player) {
              server_info_for_player->player_sight.cord_y);
     mvprintw(row++, column + 1, "Deaths      %d", server_info_for_player->deaths);
     row += 1;
-    mvprintw(row++, column + 1, "Coins");
-    mvprintw(row++, column + 5, "carried %d", server_info_for_player->coins_found);
-    mvprintw(row++, column + 5, "brought %d", server_info_for_player->coins_brought);
+//    mvprintw(row++, column + 1, "Coins");
+    mvprintw(row++, column + 1, "Coind found %d", server_info_for_player->coins_found);
+    mvprintw(row++, column + 1, "Coins brought %d", server_info_for_player->coins_brought);
 
     display_game_legend(server_info_for_player->map_width, server_info_for_player->map_height);
 }

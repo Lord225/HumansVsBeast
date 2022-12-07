@@ -25,8 +25,8 @@ typedef struct Map {
 } Map;
 
 typedef struct Location {
-    unsigned int x;
-    unsigned int y;
+    int x;
+    int y;
 } Location;
 
 

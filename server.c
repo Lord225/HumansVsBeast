@@ -29,23 +29,23 @@ typedef struct Server {
 
 void *player_thread(void *arg) {
 
-    Player **p= (Player **) arg;
+    Player **p = (Player **) arg;
     Player *player = *p;
 
     ClientInfoForServer client_info = {0};
     client_info.is_connected = true;
 
-    while(client_info.is_connected) {
+    while (client_info.is_connected) {
 
         ssize_t bytes_recived = recv(player->cfd, &client_info, sizeof(ClientInfoForServer), 0);
-        if(bytes_recived <= 0) {
+        if (bytes_recived <= 0) {
             client_info.is_connected = false;
             destroy_player(p);
         }
-        player->was_key_sent_last_turn=true;
+        player->was_key_sent_last_turn = true;
         player->last_key = client_info.key;
 
-        if(player->last_key=='q') {
+        if (player->last_key == 'q') {
             client_info.is_connected = false;
             destroy_player(p);
         }
@@ -53,7 +53,7 @@ void *player_thread(void *arg) {
 //        player_move(player, client_info.key);
 
 //        send(player->cfd, (void*)1, sizeof(int), 0);
-//        printf("player loc y %ud", player->current_location.y);
+//        printf("player loc y %d", player->current_location.y);
 
     }
 
@@ -86,7 +86,7 @@ void *connection_handlig(void *arg) {
 
             int free_slot = find_free_player_slot(args.game);
 
-            if (free_slot!=-1) {
+            if (free_slot != -1) {
                 struct ServerInfoForPlayer server_info = {0};
                 server_info.server_is_full = false;
                 send(cfd, &server_info, sizeof(ServerInfoForPlayer), 0);
@@ -120,16 +120,16 @@ void *connection_handlig(void *arg) {
     return NULL;
 }
 
-void *serverKeyboardThread(void *arg) {
-    Server args = *(Server *) arg;
-    while (args.server_running) {
-        int key = getch();
-        if (key == 'q') {
-            args.server_running = false;
-        }
-    }
-    return NULL;
-}
+//void *serverKeyboardThread(void *arg) {
+//    Server args = *(Server *) arg;
+//    while (args.server_running) {
+//        int key = getch();
+//        if (key == 'q') {
+//            args.server_running = false;
+//        }
+//    }
+//    return NULL;
+//}
 
 Server server;
 
@@ -156,17 +156,15 @@ int main(void) {
 
     pthread_t threadConnHandling;
 
+//    pthread_t threadServerKeyboard;
+
     pthread_create(&threadConnHandling, NULL, connection_handlig, &server);
+
 
     // initialize ncurses screen
     init_screen();
 
-
-//    attron(COLOR_PAIR(PLAYER_COLOR));
-//    mvprintw(player1->spawn_point.y, player1->spawn_point.x, "%d", 1);
-//    attroff(COLOR_PAIR(1));
-//    refresh();
-//
+//    pthread_create(&threadServerKeyboard, NULL, serverKeyboardThread, &server);
 
 
     display_static_game_info(game);
@@ -176,7 +174,6 @@ int main(void) {
     while (server.server_running) {
 
         display_map(game->map);
-
 
 
         pthread_mutex_lock(&game->game_mutex);
@@ -190,28 +187,11 @@ int main(void) {
 //#if DEBUG
 //        move(game->map->height + 1, 0);
 //#endif
-        sleep(1);
+//        sleep(1);
+        usleep(500000);
 
         game->round_number += 1;
     }
-
-
-//    int key = ' ';
-//    while (server_running) {
-//
-//        pthread_create(&connection_handler, NULL, handle_connection, (void *) &cfd);
-//
-//        ssize_t recvd = recv(cfd, &key, sizeof(key) - 1, 0);
-//        if(key == 'q') {
-//            server_running = false;
-//        }
-//        usleep(500000);
-//        player_move(game, 0, key);
-//        refresh();
-//        int response = 1;
-//        send(cfd,&response, sizeof(response), 0);
-//    }
-
 
 
     done_screen(); // end ncurses screen

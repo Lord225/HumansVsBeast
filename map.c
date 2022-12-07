@@ -104,8 +104,8 @@ Location get_random_free_location(Map *map) {
     Location location;
 
     srand(time(NULL));
-    unsigned int x = rand() % map->width;
-    unsigned int y = rand() % map->height;
+    int x = rand() % map->width;
+    int y = rand() % map->height;
 
 
     while (map->fields[y][x].tile != EMPTY) {

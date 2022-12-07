@@ -79,11 +79,11 @@ void display_non_static_game_info(Game *game) {
 
     mvprintw(row++, column + 1 + strlen("Campsite X/Y: "), "%02u/%02u", game->campsite_location.x,
              game->campsite_location.y);
-    mvprintw(row++, column + 1, "Round number: %u", game->round_number);
+    mvprintw(row++, column + 1, "Round number: %d", game->round_number);
     row += 2;
     for (int i = 0; i < 4; i++) {
         if (game->players[i]) {
-            mvprintw(row, column + 4 + 9 * (i + 1), "%u", game->players[i]->pid);
+            mvprintw(row, column + 4 + 9 * (i + 1), "%d", game->players[i]->pid);
         } else {
             mvprintw(row, column + 4 + 9 * (i + 1), "-    ");
         }
@@ -108,7 +108,7 @@ void display_non_static_game_info(Game *game) {
     row += 1;
     for (int i = 0; i < 4; i++) {
         if (game->players[i]) {
-            mvprintw(row, column + 4 + 9 * (i + 1), "%u", game->players[i]->deaths);
+            mvprintw(row, column + 4 + 9 * (i + 1), "%d", game->players[i]->deaths);
         } else {
             mvprintw(row, column + 4 + 9 * (i + 1), "-    ");
         }
@@ -118,7 +118,7 @@ void display_non_static_game_info(Game *game) {
 
     for (int i = 0; i < 4; i++) {
         if (game->players[i]) {
-            mvprintw(row, column + 4 + 9 * (i + 1), "%u", game->players[i]->coins_found);
+            mvprintw(row, column + 4 + 9 * (i + 1), "%d", game->players[i]->coins_found);
         } else {
             mvprintw(row, column + 4 + 9 * (i + 1), "-    ");
         }
@@ -127,7 +127,7 @@ void display_non_static_game_info(Game *game) {
     row += 1;
     for (int i = 0; i < 4; i++) {
         if (game->players[i]) {
-            mvprintw(row, column + 4 + 9 * (i + 1), "%u", game->players[i]->coins_brought);
+            mvprintw(row, column + 4 + 9 * (i + 1), "%d", game->players[i]->coins_brought);
         } else {
             mvprintw(row, column + 4 + 9 * (i + 1), "-    ");
         }
@@ -183,7 +183,7 @@ int find_free_player_slot(Game *game) {
     return -1;
 }
 
-void spawn_player(Game *game, unsigned int player_id) {
+void spawn_player(Game *game, int player_id) {
 
     mvprintw(game->players[player_id]->spawn_point.y, game->players[player_id]->spawn_point.x, "%d",
              player_id + 1);
@@ -280,17 +280,18 @@ int send_map_data_to_player(Game *game, Player *player) {
     player_sight.cord_x = player->current_location.x;
     player_sight.cord_y = player->current_location.y;
 
-    server_info.player_number = player->id;
+    server_info.player_number = player->id+1;
     server_info.server_pid = getpid();
     server_info.deaths = player->deaths;
     server_info.coins_found = player->coins_found;
     server_info.coins_brought = player->coins_brought;
+    server_info.round_number = game->round_number;
 
     for(int i=0;i<PLAYER_SIGHT;i++){
         for(int j=0;j<PLAYER_SIGHT;j++){
             int first = player_sight.cord_y - PLAYER_SIGHT/2 + i;
             int second = player_sight.cord_x - PLAYER_SIGHT/2 + j;
-            if(first >=0 && second >=0) {
+            if(first >=0 && second >=0 && first < game->map->height && second < game->map->width){
                 player_sight.fields[i][j]=game->map->fields[first][second];
             } else {
                 player_sight.fields[i][j].tile = WALL;

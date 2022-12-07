@@ -9,11 +9,11 @@
 #define MAX_PLAYERS 4
 
 typedef struct Game {
-    unsigned int round_number;
+    int round_number;
     Map *map;
     Location campsite_location;
     Player *players[MAX_PLAYERS];
-    unsigned int player_count;
+    int player_count;
     pthread_mutex_t game_mutex;
 } Game;
 
@@ -33,7 +33,7 @@ void display_game_legend(Game *game);
 
 int find_free_player_slot(Game *game);
 
-void spawn_player(Game *game, unsigned int player_id);
+void spawn_player(Game *game, int player_id);
 
 void display_players_on_map(Game *game);
 

@@ -6,7 +6,7 @@
 #include <unistd.h>
 
 
-Player *create_player(unsigned int free_slot, Location spawn_point) {
+Player *create_player(int free_slot, Location spawn_point) {
     Player *player = calloc(1,sizeof(Player));
     if (!player) {
         printf("Error: Can't allocate memory for player");
