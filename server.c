@@ -126,17 +126,19 @@ void *gameLoop(void *arg) {
 
     Game *game = args->game;
 
+    display_map(game->map);
+    refresh();
+
     while (args->server_running) {
-
-        display_map(game->map);
-
 
         pthread_mutex_lock(&game->game_mutex);
         move_players(game);
         kill_and_respawn_dead_players(game);
         send_map_data_to_all_players(game);
+        display_map(game->map);
         display_players_on_map(game);
         display_non_static_game_info(game);
+
         refresh();
         pthread_mutex_unlock(&game->game_mutex);
 

@@ -21,7 +21,7 @@ void display_player_map(ServerInfoForPlayer *server_info_for_player) {
                     printw(" ");
                     attroff(A_REVERSE);
                 } else if (player_sight->fields[i][j].tile == COIN || player_sight->fields[i][j].tile == TREASURE ||
-                           player_sight->fields[i][j].tile == LARGE_TREASURE) {
+                           player_sight->fields[i][j].tile == LARGE_TREASURE|| player_sight->fields[i][j].tile == DROPPED_TRERSURE) {
                     attron(COLOR_PAIR(2));
                     printw("%c", player_sight->fields[i][j].tile);
                     attroff(COLOR_PAIR(1));

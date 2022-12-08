@@ -82,7 +82,7 @@ void display_map(Map *map) {
                 printw(" ");
                 attroff(A_REVERSE);
             } else if (map->fields[i][j].tile == COIN || map->fields[i][j].tile == TREASURE ||
-                       map->fields[i][j].tile == LARGE_TREASURE) {
+                       map->fields[i][j].tile == LARGE_TREASURE || map->fields[i][j].tile == DROPPED_TRERSURE) {
                 attron(COLOR_PAIR(2));
                 printw("%c", map->fields[i][j].tile);
                 attroff(COLOR_PAIR(1));

@@ -232,7 +232,7 @@ void player_move(Game *game, Player *player) {
 
     if (player->is_stunned) {
         player->is_stunned = false;
-        player->was_key_sent_last_turn = false;
+//        player->was_key_sent_last_turn = false;
         kill_and_respawn_dead_players(game);
         return;
     }
@@ -320,9 +320,8 @@ void handle_player_map_interaction(Game *game, Player *player) {
         player->coins_found += 50;
         map->fields[player->current_location.y][player->current_location.x].tile = EMPTY;
     } else if (map->fields[player->current_location.y][player->current_location.x].tile == DROPPED_TRERSURE) {
-//        player->coins_found += 50;
+        player->coins_found += map->fields[player->current_location.y][player->current_location.x].value;
         map->fields[player->current_location.y][player->current_location.x].tile = EMPTY;
-        // DOPISAC BRAKUJACY KOD
     } else if (map->fields[player->current_location.y][player->current_location.x].tile == BUSH) {
         player->is_stunned = true;
     }
@@ -333,7 +332,12 @@ void kill_and_respawn_dead_players(Game *game) {
     for (int i = 0; i < MAX_PLAYERS; i++) {
         if (game->players[i] && game->players[i]->is_dead) {
             game->players[i]->is_dead = false;
+            if(game->players[i]->coins_found > 0){
+                game->map->fields[game->players[i]->current_location.y][game->players[i]->current_location.x].value += game->players[i]->coins_found;
+                game->map->fields[game->players[i]->current_location.y][game->players[i]->current_location.x].tile = DROPPED_TRERSURE;
+            }
             game->players[i]->coins_found = 0;
+            game->players[i]->deaths += 1;
             game->players[i]->current_location = game->players[i]->spawn_point;
         }
     }
@@ -360,9 +364,6 @@ int send_map_data_to_player(Game *game, Player *player) {
     server_info.round_number = game->round_number;
 
 
-
-
-
     for (int i = 0; i < PLAYER_SIGHT; i++) {
         for (int j = 0; j < PLAYER_SIGHT; j++) {
             int first = player_sight.cord_y - PLAYER_SIGHT / 2 + i;
@@ -374,7 +375,7 @@ int send_map_data_to_player(Game *game, Player *player) {
                     if (game->players[k] && game->players[k] != player) {
                         if (game->players[k]->current_location.x == second &&
                             game->players[k]->current_location.y == first) {
-                            player_sight.fields[i][j].tile = PLAYER1+k;
+                            player_sight.fields[i][j].tile = PLAYER1 + k;
                         }
                     }
                 }

@@ -21,6 +21,7 @@ typedef enum Tile {
 
 typedef struct Field {
     Tile tile;
+    int value;
 } Field;
 
 typedef struct Map {
@@ -33,13 +34,6 @@ typedef struct Location {
     int x;
     int y;
 } Location;
-
-
-typedef struct DroppedTreasure {
-    Location location;
-    Tile tile;
-    int value;
-} DroppedTreasure;
 
 Map *load_map(void);
 
