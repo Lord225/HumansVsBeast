@@ -29,7 +29,18 @@ void display_player_map(ServerInfoForPlayer *server_info_for_player) {
                     attron(COLOR_PAIR(3));
                     printw("%c", player_sight->fields[i][j].tile);
                     attroff(COLOR_PAIR(3));
-                } else {
+                } else if(player_sight->fields[i][j].tile == PLAYER1 || player_sight->fields[i][j].tile == PLAYER2 || player_sight->fields[i][j].tile == PLAYER3 || player_sight->fields[i][j].tile == PLAYER4) {
+
+                    attron(COLOR_PAIR(PLAYER_COLOR));
+                    printw("%c", player_sight->fields[i][j].tile);
+                    attroff(COLOR_PAIR(PLAYER_COLOR));
+
+                }else if(player_sight->fields[i][j].tile==BEAST){
+                    attron(COLOR_PAIR(BEAST_COLOR));
+                    printw("%c", player_sight->fields[i][j].tile);
+                    attroff(COLOR_PAIR(BEAST_COLOR));
+
+                }else {
                     printw("%c", player_sight->fields[i][j].tile);
                 }
             }

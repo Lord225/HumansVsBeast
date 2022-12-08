@@ -11,7 +11,12 @@ typedef enum Tile {
     COIN = 'c',
     TREASURE = 't',
     LARGE_TREASURE = 'T',
-    DROPPED_TRERSURE = 'D'
+    DROPPED_TRERSURE = 'D',
+    BEAST = '*',
+    PLAYER1 = '1',
+    PLAYER2 = '2',
+    PLAYER3 = '3',
+    PLAYER4 = '4',
 } Tile;
 
 typedef struct Field {

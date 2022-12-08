@@ -303,7 +303,6 @@ void handle_player_map_interaction(Game *game, Player *player) {
                 game->players[i]->current_location.y == player->current_location.y) {
                 player->is_dead = true;
                 game->players[i]->is_dead = true;
-                game->players[i]->coins_found = 0;
             }
         }
     }
@@ -360,12 +359,26 @@ int send_map_data_to_player(Game *game, Player *player) {
     server_info.coins_brought = player->coins_brought;
     server_info.round_number = game->round_number;
 
+
+
+
+
     for (int i = 0; i < PLAYER_SIGHT; i++) {
         for (int j = 0; j < PLAYER_SIGHT; j++) {
             int first = player_sight.cord_y - PLAYER_SIGHT / 2 + i;
             int second = player_sight.cord_x - PLAYER_SIGHT / 2 + j;
             if (first >= 0 && second >= 0 && first < game->map->height && second < game->map->width) {
                 player_sight.fields[i][j] = game->map->fields[first][second];
+                // find nearbly players
+                for (int k = 0; k < MAX_PLAYERS; k++) {
+                    if (game->players[k] && game->players[k] != player) {
+                        if (game->players[k]->current_location.x == second &&
+                            game->players[k]->current_location.y == first) {
+                            player_sight.fields[i][j].tile = PLAYER1+k;
+                        }
+                    }
+                }
+                //
             } else {
                 player_sight.fields[i][j].tile = WALL;
             }
