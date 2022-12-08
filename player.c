@@ -38,9 +38,9 @@ void destroy_player(Player **player) {
     pthread_join((*player)->thread, NULL);
     close((*player)->cfd);
 
-    free(*player);
-    *player = NULL;
+    if(*player) {
+        free(*player);
+        *player = NULL;
+    }
 
 }
-
-

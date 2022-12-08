@@ -35,6 +35,9 @@ typedef struct ServerInfoForPlayer {
     int coins_found;
     int coins_brought;
     int player_number;
+
+    bool disconnect_player_server_closed;
+
 } ServerInfoForPlayer;
 
 

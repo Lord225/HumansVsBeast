@@ -44,4 +44,10 @@ void display_map(Map *map);
 
 Location get_random_free_location(Map *map);
 
+void add_new_coin(Map *map, Location location);
+
+void add_new_treasure(Map *map, Location location);
+
+void add_new_large_treasure(Map *map, Location location);
+
 #endif //HUMANSVSBEAST_MAP_H

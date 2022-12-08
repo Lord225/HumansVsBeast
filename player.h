@@ -3,6 +3,7 @@
 
 #include "map.h"
 #include <pthread.h>
+#include <stdbool.h>
 
 typedef struct Player {
     int id;
@@ -19,9 +20,11 @@ typedef struct Player {
     int was_key_sent_last_turn;
     int is_stunned;
     int turn_passed;
+    int is_dead;
 
     pthread_t thread;
 //    pthread_mutex_t player_mutex;
+    bool is_connected;
 
 } Player;
 

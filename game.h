@@ -19,6 +19,8 @@ typedef struct Game {
 
 Game *create_game(Map *map);
 
+Location find_campsite_location(Map *map);
+
 void destroy_game(Game **game);
 
 
@@ -37,7 +39,11 @@ void spawn_player(Game *game, int player_id);
 
 void display_players_on_map(Game *game);
 
-void player_move(Map *map, Player *player);
+void player_move(Game *game, Player *player);
+
+void handle_player_map_interaction(Game *game, Player *player);
+
+void kill_and_respawn_dead_players(Game *game);
 
 void move_players(Game *game);
 
@@ -46,5 +52,11 @@ int validate_player_move(Map *map, Player *player, Location new_location);
 int send_map_data_to_player(Game *game, Player *player);
 
 int send_map_data_to_all_players(Game *game);
+
+void disconnect_players(Player *players[]);
+
+void disconnect_player(Player *player);
+
+
 
 #endif //HUMANSVSBEAST_GAME_H

@@ -15,6 +15,15 @@
 
 bool is_running = true;
 
+#define DEBUG 1
+
+void debug_print(char *msg) {
+    if (DEBUG) {
+        printw(msg);
+        refresh();
+    }
+}
+
 void *listen_for_server_info(void *arg) {
 
     int *sfd = (int *) arg;
@@ -30,6 +39,13 @@ void *listen_for_server_info(void *arg) {
 
             break;
         }
+//        printw("goodbye!\n");
+//        refresh();
+
+        if (server_info.disconnect_player_server_closed) {
+            is_running = false;
+            break;
+        }
 
         erase();
         display_player_map(&server_info);
@@ -40,15 +56,37 @@ void *listen_for_server_info(void *arg) {
     return NULL;
 }
 
+void *send_key_to_server(void *arg) {
+
+    int *sfd = (int *) arg;
+
+    ClientInfoForServer client_info = {0};
+    client_info.is_connected = true;
+
+    while (is_running) {
+
+        int key = getch();
+
+        client_info.key = key;
+        send(*sfd, &client_info, sizeof(ClientInfoForServer), 0);
+
+        if (key == 'q' || key == 'Q') {
+            is_running = false;
+            break;
+        }
+
+
+    }
+
+    return NULL;
+}
+
 int main(void) {
 
-    // create pthread
-    pthread_t thread;
-    // init pthrad
-
+    pthread_t listen_thread;
+    pthread_t keyboard_thread;
 
     int pid = getpid();
-
 
     ClientInfoForServer client_message = {0};
     ServerInfoForPlayer server_message = {0};
@@ -92,26 +130,31 @@ int main(void) {
     client_message.is_connected = true;
 
 
-    pthread_create(&thread, NULL, listen_for_server_info, (void *) &sfd);
+    pthread_create(&listen_thread, NULL, listen_for_server_info, (void *) &sfd);
+    pthread_create(&keyboard_thread, NULL, send_key_to_server, (void *) &sfd);
 
+//    while (is_running) {
+////        flushinp();
+//        int key = getch();
+//
+//
+//        client_message.key = key;
+//
+//        send(sfd, &client_message, sizeof(ClientInfoForServer), 0);
+////        int response;
+////        recv(sfd, &response, sizeof(response), 0);
+//
+//        if (key == 'q') {
+//            break;
+//        }
+//
+//    }
+//
+//
+//    refresh();
 
-    while (is_running) {
-//        flushinp();
-        int key = getch();
-
-
-        client_message.key = key;
-
-        send(sfd, &client_message, sizeof(ClientInfoForServer), 0);
-//        int response;
-//        recv(sfd, &response, sizeof(response), 0);
-
-        if (key == 'q') {
-            break;
-        }
-
-    }
-
+    pthread_join(listen_thread, NULL);
+    pthread_cancel(keyboard_thread);
 
     done_screen();
 

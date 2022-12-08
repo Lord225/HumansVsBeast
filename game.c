@@ -17,6 +17,7 @@ Game *create_game(Map *map) {
     Game *game = malloc(sizeof(Game));
     game->round_number = 0;
     game->map = map;
+    game->campsite_location = find_campsite_location(map);
 
     game->player_count = 0;
     for (int i = 0; i < 4; i++) {
@@ -25,6 +26,22 @@ Game *create_game(Map *map) {
     pthread_mutex_init(&game->game_mutex, NULL);
 
     return game;
+}
+
+Location find_campsite_location(Map *map) {
+    Location location = {0, 0};
+
+    for (int i = 0; i < map->height; i++) {
+        for (int j = 0; j < map->width; j++) {
+            if (map->fields[i][j].tile == CAMPSITE) {
+                location.x = j;
+                location.y = i;
+                break;
+            }
+        }
+    }
+
+    return location;
 }
 
 void display_game_legend(Game *game) {
@@ -70,11 +87,9 @@ void display_game_legend(Game *game) {
 void display_non_static_game_info(Game *game) {
 
 
-
     int column = game->map->width + 3;
     int row = 1;
     row += 1;
-
 
 
     mvprintw(row++, column + 1 + strlen("Campsite X/Y: "), "%02u/%02u", game->campsite_location.x,
@@ -162,7 +177,7 @@ void destroy_game(Game **game) {
     destroy_map(&(*game)->map);
 
     for (size_t i = 0; i < MAX_PLAYERS; i++) {
-        if((*game)->players[i]) {
+        if ((*game)->players[i]) {
             destroy_player(&(*game)->players[i]);
         }
     }
@@ -206,12 +221,21 @@ void move_players(Game *game) {
 
     for (size_t i = 0; i < MAX_PLAYERS; i++) {
         if (game->players[i]) {
-            player_move(game->map, game->players[i]);
+            player_move(game, game->players[i]);
         }
     }
 }
 
-void player_move(Map *map, Player *player) {
+void player_move(Game *game, Player *player) {
+
+    Map *map = game->map;
+
+    if (player->is_stunned) {
+        player->is_stunned = false;
+        player->was_key_sent_last_turn = false;
+        kill_and_respawn_dead_players(game);
+        return;
+    }
 
     Location new_location = player->current_location;
 
@@ -240,12 +264,15 @@ void player_move(Map *map, Player *player) {
         }
 
         int is_valid_move = validate_player_move(map, player, new_location);
-        if(is_valid_move) {
+        if (is_valid_move) {
             player->current_location = new_location;
+
         }
+
 
     }
 
+    handle_player_map_interaction(game, player);
 
     player->was_key_sent_last_turn = false;
 
@@ -266,33 +293,79 @@ int validate_player_move(Map *map, Player *player, Location new_location) {
 
 }
 
+void handle_player_map_interaction(Game *game, Player *player) {
 
+    Map *map = game->map;
+
+    for (int i = 0; i < MAX_PLAYERS; i++) {
+        if (game->players[i] && game->players[i] != player) {
+            if (game->players[i]->current_location.x == player->current_location.x &&
+                game->players[i]->current_location.y == player->current_location.y) {
+                player->is_dead = true;
+                game->players[i]->is_dead = true;
+                game->players[i]->coins_found = 0;
+            }
+        }
+    }
+
+    if (map->fields[player->current_location.y][player->current_location.x].tile == COIN) {
+        player->coins_found += 1;
+        map->fields[player->current_location.y][player->current_location.x].tile = EMPTY;
+    } else if (map->fields[player->current_location.y][player->current_location.x].tile == CAMPSITE) {
+        player->coins_brought += player->coins_found;
+        player->coins_found = 0;
+    } else if (map->fields[player->current_location.y][player->current_location.x].tile == TREASURE) {
+        player->coins_found += 10;
+        map->fields[player->current_location.y][player->current_location.x].tile = EMPTY;
+    } else if (map->fields[player->current_location.y][player->current_location.x].tile == LARGE_TREASURE) {
+        player->coins_found += 50;
+        map->fields[player->current_location.y][player->current_location.x].tile = EMPTY;
+    } else if (map->fields[player->current_location.y][player->current_location.x].tile == DROPPED_TRERSURE) {
+//        player->coins_found += 50;
+        map->fields[player->current_location.y][player->current_location.x].tile = EMPTY;
+        // DOPISAC BRAKUJACY KOD
+    } else if (map->fields[player->current_location.y][player->current_location.x].tile == BUSH) {
+        player->is_stunned = true;
+    }
+}
+
+void kill_and_respawn_dead_players(Game *game) {
+
+    for (int i = 0; i < MAX_PLAYERS; i++) {
+        if (game->players[i] && game->players[i]->is_dead) {
+            game->players[i]->is_dead = false;
+            game->players[i]->coins_found = 0;
+            game->players[i]->current_location = game->players[i]->spawn_point;
+        }
+    }
+
+}
 
 int send_map_data_to_player(Game *game, Player *player) {
 
-    ServerInfoForPlayer server_info= {0};
+    ServerInfoForPlayer server_info = {0};
     server_info.map_width = game->map->width;
     server_info.map_height = game->map->height;
 
     PlayerSight player_sight = {0};
 
-    player_sight.radius= PLAYER_SIGHT;
+    player_sight.radius = PLAYER_SIGHT;
     player_sight.cord_x = player->current_location.x;
     player_sight.cord_y = player->current_location.y;
 
-    server_info.player_number = player->id+1;
+    server_info.player_number = player->id + 1;
     server_info.server_pid = getpid();
     server_info.deaths = player->deaths;
     server_info.coins_found = player->coins_found;
     server_info.coins_brought = player->coins_brought;
     server_info.round_number = game->round_number;
 
-    for(int i=0;i<PLAYER_SIGHT;i++){
-        for(int j=0;j<PLAYER_SIGHT;j++){
-            int first = player_sight.cord_y - PLAYER_SIGHT/2 + i;
-            int second = player_sight.cord_x - PLAYER_SIGHT/2 + j;
-            if(first >=0 && second >=0 && first < game->map->height && second < game->map->width){
-                player_sight.fields[i][j]=game->map->fields[first][second];
+    for (int i = 0; i < PLAYER_SIGHT; i++) {
+        for (int j = 0; j < PLAYER_SIGHT; j++) {
+            int first = player_sight.cord_y - PLAYER_SIGHT / 2 + i;
+            int second = player_sight.cord_x - PLAYER_SIGHT / 2 + j;
+            if (first >= 0 && second >= 0 && first < game->map->height && second < game->map->width) {
+                player_sight.fields[i][j] = game->map->fields[first][second];
             } else {
                 player_sight.fields[i][j].tile = WALL;
             }
@@ -315,5 +388,22 @@ int send_map_data_to_all_players(Game *game) {
         }
     }
     return 0;
+
+}
+
+void disconnect_players(Player *players[]) {
+
+    for (size_t i = 0; i < MAX_PLAYERS; i++) {
+        if (players[i]) {
+            disconnect_player(players[i]);
+        }
+    }
+}
+
+void disconnect_player(Player *player) {
+
+    ServerInfoForPlayer server_info = {0};
+    server_info.disconnect_player_server_closed = true;
+    send(player->cfd, &server_info, sizeof(ServerInfoForPlayer), 0);
 
 }

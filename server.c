@@ -45,7 +45,7 @@ void *player_thread(void *arg) {
         player->was_key_sent_last_turn = true;
         player->last_key = client_info.key;
 
-        if (player->last_key == 'q') {
+        if (player->last_key == 'q' || player->last_key == 'Q') {
             client_info.is_connected = false;
             destroy_player(p);
         }
@@ -133,6 +133,7 @@ void *gameLoop(void *arg) {
 
         pthread_mutex_lock(&game->game_mutex);
         move_players(game);
+        kill_and_respawn_dead_players(game);
         send_map_data_to_all_players(game);
         display_players_on_map(game);
         display_non_static_game_info(game);
@@ -196,12 +197,30 @@ int main(void) {
 
     while (server.server_running) {
         int key = getch();
-        if (key == 'q') {
+        if (key == 'q' || key == 'Q') {
+            pthread_mutex_lock(&game->game_mutex);
+            disconnect_players(game->players);
+            pthread_mutex_unlock(&game->game_mutex);
             server.server_running = false;
+            pthread_join(threadGameLoop, NULL);
+
+        } else if(key=='c') {
+            pthread_mutex_lock(&game->game_mutex);
+            add_new_coin(game->map, get_random_free_location(game->map));
+            pthread_mutex_unlock(&game->game_mutex);
+        } else if(key=='t') {
+            pthread_mutex_lock(&game->game_mutex);
+            add_new_treasure(game->map, get_random_free_location(game->map));
+            pthread_mutex_unlock(&game->game_mutex);
+        } else if(key=='T') {
+            pthread_mutex_lock(&game->game_mutex);
+            add_new_large_treasure(game->map, get_random_free_location(game->map));
+            pthread_mutex_unlock(&game->game_mutex);
         }
     }
 
-    pthread_join(threadGameLoop, NULL);
+
+//    pthread_join(threadGameLoop, NULL);
     pthread_cancel(threadConnHandling);
     pthread_join(threadConnHandling, NULL);
 
