@@ -40,6 +40,10 @@ int get_random_direction(void) {
 
 
 void destroy_beast(Beast **beast) {
+    if (!beast || !*beast) {
+        return;
+    }
+
     free(*beast);
     *beast = NULL;
 }

@@ -18,6 +18,9 @@
 
 #define PORT 9002
 
+pthread_cond_t beastCond;
+
+
 
 typedef struct Server {
     bool server_running;
@@ -27,23 +30,27 @@ typedef struct Server {
 
 typedef struct BeastPayload {
     Beast *beast;
-    Game *game;
+    Server *server;
+
 } BeastPayload;
 
 
 void *beast_thread(void *arg) {
     BeastPayload *payload = (BeastPayload *) arg;
     Beast *beast = payload->beast;
-    Game *game = payload->game;
+    Game *game = payload->server->game;
 
-    while (1) {
+    while (payload->server->server_running) {
 
-        pthread_mutex_lock(&game->game_mutex);
+//        pthread_mutex_lock(&game->game_mutex);
+
+        pthread_cond_wait(&beastCond, &game->game_mutex);
+
         int new_dir = beast_ai(game, beast);
         beast->direction = new_dir;
         pthread_mutex_unlock(&game->game_mutex);
 
-        usleep(100000);
+
     }
 
     return NULL;
@@ -140,14 +147,14 @@ void *gameLoop(void *arg) {
 
     refresh();
 
-    if (game->beast_count < MAX_BEASTS && BEASTS_AT_START>0) {
+    if (game->beast_count < MAX_BEASTS && BEASTS_AT_START > 0) {
         pthread_mutex_lock(&game->game_mutex);
-        for(int i=0;i<BEASTS_AT_START;i++) {
+        for (int i = 0; i < BEASTS_AT_START; i++) {
             Beast *beast = add_new_beast(game);
             if (beast != NULL) {
                 BeastPayload payload = {0};
                 payload.beast = beast;
-                payload.game = game;
+                payload.server = args;
                 pthread_create(&beast->thread, NULL, beast_thread, &payload);
             }
         }
@@ -158,7 +165,7 @@ void *gameLoop(void *arg) {
 
         pthread_mutex_lock(&game->game_mutex);
         move_players(game);
-        if(game->beast_count>0) {
+        if (game->beast_count > 0) {
             move_beasts(game);
         }
         kill_and_respawn_dead_players(game);
@@ -175,6 +182,7 @@ void *gameLoop(void *arg) {
         pthread_mutex_unlock(&game->game_mutex);
 
         usleep(500000);
+        pthread_cond_signal(&beastCond);
 
         game->round_number += 1;
 
@@ -250,7 +258,7 @@ int main(void) {
                 if (beast != NULL) {
                     BeastPayload payload = {0};
                     payload.beast = beast;
-                    payload.game = game;
+                    payload.server = &server;
                     pthread_create(&beast->thread, NULL, beast_thread, &payload);
                 }
                 pthread_mutex_unlock(&game->game_mutex);

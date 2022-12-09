@@ -176,7 +176,7 @@ void destroy_game(Game **game) {
 
     destroy_map(&(*game)->map);
 
-    for(int i=0;i<MAX_BEASTS;i++){
+    for (int i = 0; i < MAX_BEASTS; i++) {
         destroy_beast(&(*game)->beasts[i]);
     }
 
@@ -311,10 +311,10 @@ void handle_player_map_interaction(Game *game, Player *player) {
         }
     }
 
-    for(int i=0;i<MAX_BEASTS;i++){
-        if(game->beasts[i]){
-            if(game->beasts[i]->current_location.x == player->current_location.x &&
-               game->beasts[i]->current_location.y == player->current_location.y){
+    for (int i = 0; i < MAX_BEASTS; i++) {
+        if (game->beasts[i]) {
+            if (game->beasts[i]->current_location.x == player->current_location.x &&
+                game->beasts[i]->current_location.y == player->current_location.y) {
                 player->is_dead = true;
             }
         }
@@ -343,18 +343,19 @@ void handle_player_map_interaction(Game *game, Player *player) {
 void kill_and_respawn_dead_players(Game *game) {
 
     for (int i = 0; i < MAX_PLAYERS; i++) {
-        if (game->players[i] && game->players[i]->is_dead) {
-            game->players[i]->is_dead = false;
-            if (game->players[i]->coins_found > 0) {
-                game->map->fields[game->players[i]->current_location.y][game->players[i]->current_location.x].value += game->players[i]->coins_found;
-                game->map->fields[game->players[i]->current_location.y][game->players[i]->current_location.x].tile = DROPPED_TRERSURE;
+        if (game->players[i]) {
+            if (game->players[i]->is_dead) {
+                game->players[i]->is_dead = false;
+                if (game->players[i]->coins_found > 0) {
+                    game->map->fields[game->players[i]->current_location.y][game->players[i]->current_location.x].value += game->players[i]->coins_found;
+                    game->map->fields[game->players[i]->current_location.y][game->players[i]->current_location.x].tile = DROPPED_TRERSURE;
+                }
+                game->players[i]->coins_found = 0;
+                game->players[i]->deaths += 1;
+                game->players[i]->current_location = game->players[i]->spawn_point;
             }
-            game->players[i]->coins_found = 0;
-            game->players[i]->deaths += 1;
-            game->players[i]->current_location = game->players[i]->spawn_point;
         }
     }
-
 }
 
 int send_map_data_to_player(Game *game, Player *player) {
@@ -363,7 +364,7 @@ int send_map_data_to_player(Game *game, Player *player) {
     server_info.map_width = game->map->width;
     server_info.map_height = game->map->height;
 
-    if(player->campsite_found) {
+    if (player->campsite_found) {
         server_info.campsite_x = game->campsite_location.x;
         server_info.campsite_y = game->campsite_location.y;
     } else {
@@ -392,9 +393,9 @@ int send_map_data_to_player(Game *game, Player *player) {
             int second = player_sight.cord_x - PLAYER_SIGHT / 2 + j;
             if (first >= 0 && second >= 0 && first < game->map->height && second < game->map->width) {
                 player_sight.fields[i][j] = game->map->fields[first][second];
-        if(player_sight.fields[i][j].tile == CAMPSITE) {
-            player->campsite_found = true;
-        }
+                if (player_sight.fields[i][j].tile == CAMPSITE) {
+                    player->campsite_found = true;
+                }
                 for (int k = 0; k < MAX_PLAYERS; k++) {
                     if (game->players[k] && game->players[k] != player) {
                         if (game->players[k]->current_location.x == second &&
@@ -405,10 +406,10 @@ int send_map_data_to_player(Game *game, Player *player) {
                 }
 
                 for (int k = 0; k < game->beast_count; k++) {
-                        if (game->beasts[k]->current_location.x == second &&
-                            game->beasts[k]->current_location.y == first) {
-                            player_sight.fields[i][j].tile = BEAST;
-                        }
+                    if (game->beasts[k]->current_location.x == second &&
+                        game->beasts[k]->current_location.y == first) {
+                        player_sight.fields[i][j].tile = BEAST;
+                    }
                 }
             } else {
                 player_sight.fields[i][j].tile = WALL;
