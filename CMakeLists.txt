@@ -39,6 +39,6 @@ target_link_libraries(server ${CURSES_LIBRARIES} Threads::Threads)
 
 add_executable(client client.c utils.c utils.h common.h client_utils.c client_utils.h)
 
-target_link_libraries(client ${CURSES_LIBRARIES})
+target_link_libraries(client ${CURSES_LIBRARIES} Threads::Threads)
 
 configure_file(default_map.txt map.txt COPYONLY)
