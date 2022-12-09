@@ -31,13 +31,9 @@ void display_non_static_game_info(Game *game);
 
 void display_static_game_info(Game *game);
 
-void display_game_info(Game *game);
-
 void display_game_legend(Game *game);
 
 int find_free_player_slot(Game *game);
-
-void spawn_player(Game *game, int player_id);
 
 void display_players_on_map(Game *game);
 
@@ -66,7 +62,5 @@ int is_player_on(Game *game, int x, int y);
 int is_beast_on(Game *game, int x, int y);
 
 int is_entity_on(Game *game, int x, int y);
-
-void spawn_default_beasts(Game *game);
 
 #endif //HUMANSVSBEAST_GAME_H

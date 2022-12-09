@@ -19,7 +19,7 @@
 #define PORT 9002
 
 pthread_cond_t beastCond;
-
+pthread_cond_t keyboardCond;
 
 
 typedef struct Server {
@@ -49,7 +49,6 @@ void *beast_thread(void *arg) {
         int new_dir = beast_ai(game, beast);
         beast->direction = new_dir;
         pthread_mutex_unlock(&game->game_mutex);
-
 
     }
 
@@ -183,6 +182,7 @@ void *gameLoop(void *arg) {
 
         usleep(500000);
         pthread_cond_signal(&beastCond);
+        pthread_cond_signal(&keyboardCond);
 
         game->round_number += 1;
 
@@ -240,20 +240,24 @@ int main(void) {
             pthread_join(threadGameLoop, NULL);
 
         } else if (key == 'c') {
-            pthread_mutex_lock(&game->game_mutex);
+//            pthread_mutex_lock(&game->game_mutex);
+            pthread_cond_wait(&keyboardCond, &game->game_mutex);
             add_new_coin(game->map, get_random_free_location(game));
             pthread_mutex_unlock(&game->game_mutex);
         } else if (key == 't') {
-            pthread_mutex_lock(&game->game_mutex);
+//            pthread_mutex_lock(&game->game_mutex);
+            pthread_cond_wait(&keyboardCond, &game->game_mutex);
             add_new_treasure(game->map, get_random_free_location(game));
             pthread_mutex_unlock(&game->game_mutex);
         } else if (key == 'T') {
-            pthread_mutex_lock(&game->game_mutex);
+//            pthread_mutex_lock(&game->game_mutex);
+            pthread_cond_wait(&keyboardCond, &game->game_mutex);
             add_new_large_treasure(game->map, get_random_free_location(game));
             pthread_mutex_unlock(&game->game_mutex);
         } else if (key == 'b' || key == 'B') {
             if (game->beast_count < MAX_BEASTS) {
-                pthread_mutex_lock(&game->game_mutex);
+                pthread_cond_wait(&keyboardCond, &game->game_mutex);
+//                pthread_mutex_lock(&game->game_mutex);
                 Beast *beast = add_new_beast(game);
                 if (beast != NULL) {
                     BeastPayload payload = {0};
@@ -265,6 +269,7 @@ int main(void) {
             }
 
         }
+        flushinp();
     }
 
 

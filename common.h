@@ -21,11 +21,7 @@ typedef struct ClientInfoForServer {
 } ClientInfoForServer;
 
 typedef struct ServerInfoForPlayer {
-    bool connected;
-    bool serverClosed;
     bool server_is_full;
-    bool disconnect;
-    int cfd;
     PlayerSight player_sight;
     int map_height;
     int map_width;

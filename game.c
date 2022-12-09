@@ -202,17 +202,11 @@ int find_free_player_slot(Game *game) {
     return -1;
 }
 
-void spawn_player(Game *game, int player_id) {
-
-    mvprintw(game->players[player_id]->spawn_point.y, game->players[player_id]->spawn_point.x, "%d",
-             player_id + 1);
-
-}
 
 void display_players_on_map(Game *game) {
 
     attron(COLOR_PAIR(PLAYER_COLOR));
-    for (size_t i = 0; i < MAX_PLAYERS; i++) {
+    for (int i = 0; i < MAX_PLAYERS; i++) {
         if (game->players[i]) {
             mvprintw(game->players[i]->current_location.y, game->players[i]->current_location.x, "%d",
                      i + 1);
