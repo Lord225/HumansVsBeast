@@ -19,8 +19,6 @@ add_compile_options(
 #        "-Wno-error=parentheses"
 #        "-Wno-parentheses"
 #        "-D_GNU_SOURCE"
-#        "-fsanitize=address"
-#        "-fno-sanitize=null"
 )
 
 set(CURSES_NEED_NCURSES TRUE)
