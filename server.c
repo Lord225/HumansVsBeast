@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <ctype.h>
-
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
@@ -15,7 +14,7 @@
 #include "utils.h"
 
 
-#define DEBUG 1
+#define BEASTS_AT_START 1
 
 #define PORT 9002
 
@@ -33,27 +32,23 @@ typedef struct BeastPayload {
 
 
 void *beast_thread(void *arg) {
-//    Beast *beast = (Beast *) arg;
     BeastPayload *payload = (BeastPayload *) arg;
     Beast *beast = payload->beast;
     Game *game = payload->game;
 
     while (1) {
-//        beast->direction = get_random_direction();
-        move_beast_towards_player(game, beast);
+
+        pthread_mutex_lock(&game->game_mutex);
+        int new_dir = beast_ai(game, beast);
+        beast->direction = new_dir;
+        pthread_mutex_unlock(&game->game_mutex);
+
         usleep(100000);
     }
 
     return NULL;
 }
 
-void spawn_default_beasts(Game *game){
-    Beast *beast = add_new_beast(game);
-    BeastPayload payload = {0};
-    payload.beast = beast;
-    payload.game = game;
-    pthread_create(&beast->thread, NULL, beast_thread, &payload);
-}
 
 void *player_thread(void *arg) {
 
@@ -77,11 +72,6 @@ void *player_thread(void *arg) {
             client_info.is_connected = false;
             destroy_player(p);
         }
-//        printw("bytes_recived: %d", (int)bytes_recived);
-//        player_move(player, client_info.key);
-
-//        send(player->cfd, (void*)1, sizeof(int), 0);
-//        printf("player loc y %d", player->current_location.y);
 
     }
 
@@ -103,13 +93,9 @@ void *connection_handlig(void *arg) {
         // accept connection
         int cfd = accept(args->sfd, (struct sockaddr *) &client_info, &client_info_len);
         if (cfd < 0) {
-//#if DEBUG
-//            fprintf(stderr, "[CONN_THERED] [ERROR] accept failed\n");
-//#endif
+
         } else {
-//#if DEBUG
-//            fprintf(stderr, "[CONN_THERED] [INFO] client connected\n");
-//#endif
+
             pthread_mutex_lock(&args->game->game_mutex);
 
             int free_slot = find_free_player_slot(args->game);
@@ -127,10 +113,6 @@ void *connection_handlig(void *arg) {
                 args->game->players[free_slot]->pid = pid;
                 args->game->players[free_slot]->cfd = cfd;
                 args->game->player_count++;
-                // inint mutex
-//                pthread_mutex_init(&args.game->players[free_slot]->player_mutex, NULL);
-
-
 
                 pthread_create(&player->thread, NULL, player_thread, &args->game->players[free_slot]);
 
@@ -156,22 +138,34 @@ void *gameLoop(void *arg) {
 
     display_map(game->map);
 
-    pthread_mutex_init(&game->game_mutex, NULL);
-    spawn_default_beasts(game);
-    // unlock mutex
-    pthread_mutex_unlock(&game->game_mutex);
     refresh();
+
+    if (game->beast_count < MAX_BEASTS && BEASTS_AT_START>0) {
+        pthread_mutex_lock(&game->game_mutex);
+        for(int i=0;i<BEASTS_AT_START;i++) {
+            Beast *beast = add_new_beast(game);
+            if (beast != NULL) {
+                BeastPayload payload = {0};
+                payload.beast = beast;
+                payload.game = game;
+                pthread_create(&beast->thread, NULL, beast_thread, &payload);
+            }
+        }
+        pthread_mutex_unlock(&game->game_mutex);
+    }
 
     while (args->server_running) {
 
         pthread_mutex_lock(&game->game_mutex);
         move_players(game);
+        if(game->beast_count>0) {
+            move_beasts(game);
+        }
         kill_and_respawn_dead_players(game);
         send_map_data_to_all_players(game);
         display_map(game->map);
         display_players_on_map(game);
         if (game->beast_count > 0) {
-            move_beasts(game);
             display_beasts_on_map(game);
         }
 
@@ -180,10 +174,6 @@ void *gameLoop(void *arg) {
         refresh();
         pthread_mutex_unlock(&game->game_mutex);
 
-//#if DEBUG
-//        move(game->map->height + 1, 0);
-//#endif
-//        sleep(1);
         usleep(500000);
 
         game->round_number += 1;
@@ -218,7 +208,6 @@ int main(void) {
     pthread_t threadConnHandling;
     pthread_t threadGameLoop;
 
-//    pthread_t threadServerKeyboard;
 
     pthread_create(&threadConnHandling, NULL, connection_handlig, &server);
 
@@ -232,7 +221,6 @@ int main(void) {
 
     pthread_create(&threadGameLoop, NULL, gameLoop, &server);
 
-    // mutex
 
     while (server.server_running) {
         int key = getch();

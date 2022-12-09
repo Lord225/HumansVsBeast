@@ -14,13 +14,6 @@ Player *create_player(int free_slot, Location spawn_point) {
     }
 
     player->id = free_slot;
-//    *player_count += 1;
-
-
-//    player->deaths = 0;
-//    player->coins_found = 0;
-//    player->coins_brought = 0;
-//    player->is_stunned = 0;
 
     player->spawn_point = player->current_location = spawn_point;
 

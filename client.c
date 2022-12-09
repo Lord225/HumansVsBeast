@@ -15,20 +15,12 @@
 
 bool is_running = true;
 
-#define DEBUG 1
-
-void debug_print(char *msg) {
-    if (DEBUG) {
-        printw(msg);
-        refresh();
-    }
-}
 
 void *listen_for_server_info(void *arg) {
 
     int *sfd = (int *) arg;
 
-//    ServerInfoForPlayer *server_info = {0};
+
     ServerInfoForPlayer server_info = {0};
 
     while (is_running) {
@@ -39,8 +31,7 @@ void *listen_for_server_info(void *arg) {
 
             break;
         }
-//        printw("goodbye!\n");
-//        refresh();
+
 
         if (server_info.disconnect_player_server_closed) {
             is_running = false;
@@ -125,33 +116,12 @@ int main(void) {
     // start ncurses
 
     init_screen();
-//    printw("Welcome to the game!\n");
 
     client_message.is_connected = true;
 
 
     pthread_create(&listen_thread, NULL, listen_for_server_info, (void *) &sfd);
     pthread_create(&keyboard_thread, NULL, send_key_to_server, (void *) &sfd);
-
-//    while (is_running) {
-////        flushinp();
-//        int key = getch();
-//
-//
-//        client_message.key = key;
-//
-//        send(sfd, &client_message, sizeof(ClientInfoForServer), 0);
-////        int response;
-////        recv(sfd, &response, sizeof(response), 0);
-//
-//        if (key == 'q') {
-//            break;
-//        }
-//
-//    }
-//
-//
-//    refresh();
 
     pthread_join(listen_thread, NULL);
     pthread_cancel(keyboard_thread);

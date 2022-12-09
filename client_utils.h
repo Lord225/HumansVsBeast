@@ -1,7 +1,3 @@
-//
-// Created by Mateusz on 07.12.2022.
-//
-
 #ifndef HUMANSVSBEAST_CLIENT_UTILS_H
 #define HUMANSVSBEAST_CLIENT_UTILS_H
 
