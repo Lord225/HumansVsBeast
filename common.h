@@ -38,6 +38,9 @@ typedef struct ServerInfoForPlayer {
 
     bool disconnect_player_server_closed;
 
+    int campsite_x;
+    int campsite_y;
+
 } ServerInfoForPlayer;
 
 

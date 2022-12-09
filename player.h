@@ -25,6 +25,7 @@ typedef struct Player {
     pthread_t thread;
 //    pthread_mutex_t player_mutex;
     bool is_connected;
+    bool campsite_found;
 
 } Player;
 

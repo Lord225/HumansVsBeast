@@ -5,15 +5,19 @@
 #include "player.h"
 #include "map.h"
 #include <stdbool.h>
+#include "beast.h"
 
 #define MAX_PLAYERS 4
+#define MAX_BEASTS 10
 
 typedef struct Game {
     int round_number;
     Map *map;
     Location campsite_location;
     Player *players[MAX_PLAYERS];
+    Beast *beasts[MAX_BEASTS];
     int player_count;
+    int beast_count;
     pthread_mutex_t game_mutex;
 } Game;
 
@@ -22,8 +26,6 @@ Game *create_game(Map *map);
 Location find_campsite_location(Map *map);
 
 void destroy_game(Game **game);
-
-
 
 void display_non_static_game_info(Game *game);
 
@@ -57,6 +59,14 @@ void disconnect_players(Player *players[]);
 
 void disconnect_player(Player *player);
 
+Location get_random_free_location(Game *game);
 
+int is_player_on(Game *game, int x, int y);
+
+int is_beast_on(Game *game, int x, int y);
+
+int is_entity_on(Game *game, int x, int y);
+
+void spawn_default_beasts(Game *game);
 
 #endif //HUMANSVSBEAST_GAME_H

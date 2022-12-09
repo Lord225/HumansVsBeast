@@ -100,26 +100,6 @@ void display_map(Map *map) {
 
 }
 
-Location get_random_free_location(Map *map) {
-
-    Location location;
-
-    srand(time(NULL));
-    int x = rand() % map->width;
-    int y = rand() % map->height;
-
-
-    while (map->fields[y][x].tile != EMPTY) {
-        x = rand() % map->width;
-        y = rand() % map->height;
-    }
-
-    location.x = x;
-    location.y = y;
-
-    return location;
-}
-
 void add_new_coin(Map *map, Location location) {
 
     map->fields[location.y][location.x].tile = COIN;

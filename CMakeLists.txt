@@ -19,6 +19,8 @@ add_compile_options(
 #        "-Wno-error=parentheses"
 #        "-Wno-parentheses"
 #        "-D_GNU_SOURCE"
+#        "-fsanitize=address"
+#        "-fno-sanitize=null"
 )
 
 set(CURSES_NEED_NCURSES TRUE)
@@ -31,7 +33,7 @@ find_package(Threads REQUIRED)
 
 include_directories(${CURSES_INCLUDE_DIRS})
 
-add_executable(server server.c map.c map.h player.c player.h game.c game.h utils.c utils.h socket.c socket.h common.c common.h beast.c beast.h)
+add_executable(server server.c map.c map.h player.c player.h game.c game.h utils.c utils.h socket.c socket.h common.c common.h beast.c beast.h beast_behaviour.h beast_behaviour.c)
 
 target_link_libraries(server ${CURSES_LIBRARIES} Threads::Threads)
 

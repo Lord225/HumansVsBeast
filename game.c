@@ -14,12 +14,12 @@
 
 
 Game *create_game(Map *map) {
-    Game *game = malloc(sizeof(Game));
-    game->round_number = 0;
+    Game *game = calloc(1, sizeof(Game));
+//    game->round_number = 0;
     game->map = map;
     game->campsite_location = find_campsite_location(map);
 
-    game->player_count = 0;
+//    game->player_count = 0;
     for (int i = 0; i < 4; i++) {
         game->players[i] = NULL;
     }
@@ -176,6 +176,10 @@ void destroy_game(Game **game) {
 
     destroy_map(&(*game)->map);
 
+    for(int i=0;i<MAX_BEASTS;i++){
+        destroy_beast(&(*game)->beasts[i]);
+    }
+
     for (size_t i = 0; i < MAX_PLAYERS; i++) {
         if ((*game)->players[i]) {
             destroy_player(&(*game)->players[i]);
@@ -307,6 +311,15 @@ void handle_player_map_interaction(Game *game, Player *player) {
         }
     }
 
+    for(int i=0;i<MAX_BEASTS;i++){
+        if(game->beasts[i]){
+            if(game->beasts[i]->current_location.x == player->current_location.x &&
+               game->beasts[i]->current_location.y == player->current_location.y){
+                player->is_dead = true;
+            }
+        }
+    }
+
     if (map->fields[player->current_location.y][player->current_location.x].tile == COIN) {
         player->coins_found += 1;
         map->fields[player->current_location.y][player->current_location.x].tile = EMPTY;
@@ -332,7 +345,7 @@ void kill_and_respawn_dead_players(Game *game) {
     for (int i = 0; i < MAX_PLAYERS; i++) {
         if (game->players[i] && game->players[i]->is_dead) {
             game->players[i]->is_dead = false;
-            if(game->players[i]->coins_found > 0){
+            if (game->players[i]->coins_found > 0) {
                 game->map->fields[game->players[i]->current_location.y][game->players[i]->current_location.x].value += game->players[i]->coins_found;
                 game->map->fields[game->players[i]->current_location.y][game->players[i]->current_location.x].tile = DROPPED_TRERSURE;
             }
@@ -349,6 +362,15 @@ int send_map_data_to_player(Game *game, Player *player) {
     ServerInfoForPlayer server_info = {0};
     server_info.map_width = game->map->width;
     server_info.map_height = game->map->height;
+
+    if(player->campsite_found) {
+        server_info.campsite_x = game->campsite_location.x;
+        server_info.campsite_y = game->campsite_location.y;
+    } else {
+        server_info.campsite_x = -1;
+        server_info.campsite_y = -1;
+    }
+
 
     PlayerSight player_sight = {0};
 
@@ -370,7 +392,9 @@ int send_map_data_to_player(Game *game, Player *player) {
             int second = player_sight.cord_x - PLAYER_SIGHT / 2 + j;
             if (first >= 0 && second >= 0 && first < game->map->height && second < game->map->width) {
                 player_sight.fields[i][j] = game->map->fields[first][second];
-                // find nearbly players
+        if(player_sight.fields[i][j].tile == CAMPSITE) {
+            player->campsite_found = true;
+        }
                 for (int k = 0; k < MAX_PLAYERS; k++) {
                     if (game->players[k] && game->players[k] != player) {
                         if (game->players[k]->current_location.x == second &&
@@ -379,7 +403,13 @@ int send_map_data_to_player(Game *game, Player *player) {
                         }
                     }
                 }
-                //
+
+                for (int k = 0; k < game->beast_count; k++) {
+                        if (game->beasts[k]->current_location.x == second &&
+                            game->beasts[k]->current_location.y == first) {
+                            player_sight.fields[i][j].tile = BEAST;
+                        }
+                }
             } else {
                 player_sight.fields[i][j].tile = WALL;
             }
@@ -421,3 +451,70 @@ void disconnect_player(Player *player) {
     send(player->cfd, &server_info, sizeof(ServerInfoForPlayer), 0);
 
 }
+
+Location get_random_free_location(Game *game) {
+
+    Map *map = game->map;
+    Location location = {0, 0};
+
+    srand(time(NULL));
+    int x = rand() % map->width;
+    int y = rand() % map->height;
+
+
+    while (map->fields[y][x].tile != EMPTY || is_entity_on(game, x, y)) {
+        x = rand() % map->width;
+        y = rand() % map->height;
+    }
+
+    location.x = x;
+    location.y = y;
+
+    return location;
+}
+
+int is_player_on(Game *game, int x, int y) {
+
+    Location location;
+    location.x = x;
+    location.y = y;
+
+    for (int i = 0; i < MAX_PLAYERS; i++) {
+        if (game->players[i]) {
+            if ((game->players[i]->current_location.x == location.x &&
+                 game->players[i]->current_location.y == location.y) ||
+                (game->players[i]->spawn_point.x == location.x && game->players[i]->spawn_point.y == location.y)) {
+                return 1;
+            }
+        }
+    }
+
+
+    return 0;
+
+}
+
+int is_beast_on(Game *game, int x, int y) {
+
+    Location location;
+    location.x = x;
+    location.y = y;
+
+    for (int i = 0; i < game->beast_count; i++) {
+        if (game->beasts[i] && game->beasts[i]->current_location.x == location.x &&
+            game->beasts[i]->current_location.y == location.y) {
+            return 1;
+        }
+    }
+
+    return 0;
+
+}
+
+int is_entity_on(Game *game, int x, int y) {
+
+    return is_player_on(game, x, y) || is_beast_on(game, x, y);
+
+}
+
+

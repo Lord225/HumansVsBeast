@@ -3,17 +3,17 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <ctype.h>
-#include "map.h"
-#include "player.h"
-#include "game.h"
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include "socket.h"
 #include <stdbool.h>
-#include "pthread.h"
-#include "utils.h"
+#include "game.h"
 #include "common.h"
+#include "beast_behaviour.h"
+#include "socket.h"
+#include "utils.h"
+
 
 #define DEBUG 1
 
@@ -26,6 +26,34 @@ typedef struct Server {
     Game *game;
 } Server;
 
+typedef struct BeastPayload {
+    Beast *beast;
+    Game *game;
+} BeastPayload;
+
+
+void *beast_thread(void *arg) {
+//    Beast *beast = (Beast *) arg;
+    BeastPayload *payload = (BeastPayload *) arg;
+    Beast *beast = payload->beast;
+    Game *game = payload->game;
+
+    while (1) {
+//        beast->direction = get_random_direction();
+        move_beast_towards_player(game, beast);
+        usleep(100000);
+    }
+
+    return NULL;
+}
+
+void spawn_default_beasts(Game *game){
+    Beast *beast = add_new_beast(game);
+    BeastPayload payload = {0};
+    payload.beast = beast;
+    payload.game = game;
+    pthread_create(&beast->thread, NULL, beast_thread, &payload);
+}
 
 void *player_thread(void *arg) {
 
@@ -94,7 +122,7 @@ void *connection_handlig(void *arg) {
                 int pid;
                 recv(cfd, &pid, sizeof(pid), 0);
 
-                Player *player = create_player(free_slot, get_random_free_location(args->game->map));
+                Player *player = create_player(free_slot, get_random_free_location(args->game));
                 args->game->players[free_slot] = player;
                 args->game->players[free_slot]->pid = pid;
                 args->game->players[free_slot]->cfd = cfd;
@@ -127,6 +155,11 @@ void *gameLoop(void *arg) {
     Game *game = args->game;
 
     display_map(game->map);
+
+    pthread_mutex_init(&game->game_mutex, NULL);
+    spawn_default_beasts(game);
+    // unlock mutex
+    pthread_mutex_unlock(&game->game_mutex);
     refresh();
 
     while (args->server_running) {
@@ -137,6 +170,11 @@ void *gameLoop(void *arg) {
         send_map_data_to_all_players(game);
         display_map(game->map);
         display_players_on_map(game);
+        if (game->beast_count > 0) {
+            move_beasts(game);
+            display_beasts_on_map(game);
+        }
+
         display_non_static_game_info(game);
 
         refresh();
@@ -154,9 +192,6 @@ void *gameLoop(void *arg) {
 
     return NULL;
 }
-
-
-
 
 
 int main(void) {
@@ -197,6 +232,8 @@ int main(void) {
 
     pthread_create(&threadGameLoop, NULL, gameLoop, &server);
 
+    // mutex
+
     while (server.server_running) {
         int key = getch();
         if (key == 'q' || key == 'Q') {
@@ -206,18 +243,31 @@ int main(void) {
             server.server_running = false;
             pthread_join(threadGameLoop, NULL);
 
-        } else if(key=='c') {
+        } else if (key == 'c') {
             pthread_mutex_lock(&game->game_mutex);
-            add_new_coin(game->map, get_random_free_location(game->map));
+            add_new_coin(game->map, get_random_free_location(game));
             pthread_mutex_unlock(&game->game_mutex);
-        } else if(key=='t') {
+        } else if (key == 't') {
             pthread_mutex_lock(&game->game_mutex);
-            add_new_treasure(game->map, get_random_free_location(game->map));
+            add_new_treasure(game->map, get_random_free_location(game));
             pthread_mutex_unlock(&game->game_mutex);
-        } else if(key=='T') {
+        } else if (key == 'T') {
             pthread_mutex_lock(&game->game_mutex);
-            add_new_large_treasure(game->map, get_random_free_location(game->map));
+            add_new_large_treasure(game->map, get_random_free_location(game));
             pthread_mutex_unlock(&game->game_mutex);
+        } else if (key == 'b' || key == 'B') {
+            if (game->beast_count < MAX_BEASTS) {
+                pthread_mutex_lock(&game->game_mutex);
+                Beast *beast = add_new_beast(game);
+                if (beast != NULL) {
+                    BeastPayload payload = {0};
+                    payload.beast = beast;
+                    payload.game = game;
+                    pthread_create(&beast->thread, NULL, beast_thread, &payload);
+                }
+                pthread_mutex_unlock(&game->game_mutex);
+            }
+
         }
     }
 

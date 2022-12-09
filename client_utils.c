@@ -59,7 +59,11 @@ void display_stats(ServerInfoForPlayer *server_info_for_player) {
     int column = server_info_for_player->map_width + 3;
     int row = 1;
     mvprintw(row++, column, "Server's PID: %d", server_info_for_player->server_pid);
-    mvprintw(row++, column + 1, "Campsite X/Y:");
+    if(server_info_for_player->campsite_x==-1 && server_info_for_player->campsite_y==-1) {
+        mvprintw(row++, column + 1, "Campsite X/Y: %s","unknown");
+    } else {
+        mvprintw(row++, column + 1, "Campsite X/Y: %d/%d", server_info_for_player->campsite_x, server_info_for_player->campsite_y);
+    }
     mvprintw(row++, column + 1, "Round number: %d", server_info_for_player->round_number);
     row += 1;
     mvprintw(row++, column, "Player");
