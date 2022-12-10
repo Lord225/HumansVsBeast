@@ -5,6 +5,7 @@
 #include "beast.h"
 #include <stdlib.h>
 #include <ncurses.h>
+#include <pthread.h>
 
 Beast *create_beast(Location spawn_point) {
     Beast *beast = calloc(1, sizeof(Beast));

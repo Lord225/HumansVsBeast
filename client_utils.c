@@ -64,7 +64,7 @@ void display_stats(ServerInfoForPlayer *server_info_for_player) {
     } else {
         mvprintw(row++, column + 1, "Campsite X/Y: %d/%d", server_info_for_player->campsite_x, server_info_for_player->campsite_y);
     }
-    mvprintw(row++, column + 1, "Round number: %d", server_info_for_player->round_number);
+    mvprintw(row++, column + 1, "Round number: %d      ", server_info_for_player->round_number);
     row += 1;
     mvprintw(row++, column, "Player");
     mvprintw(row++, column + 1, "Number:     %d", server_info_for_player->player_number);

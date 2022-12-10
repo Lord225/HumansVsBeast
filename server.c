@@ -273,18 +273,12 @@ int main(void) {
     }
 
 
-//    pthread_join(threadGameLoop, NULL);
+    pthread_join(threadGameLoop, NULL);
     pthread_cancel(threadConnHandling);
     pthread_join(threadConnHandling, NULL);
 
 
     done_screen(); // end ncurses screen
-//    printf("server stopped\n");
-
-
-//    printf("threadConnHandling joined\n");
-
-//    printf("threadGameLoop joined\n");
 
 
     destroy_game(&game);
