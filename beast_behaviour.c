@@ -5,6 +5,7 @@
 #include <limits.h>
 #include "utils.h"
 #include "dfs.h"
+#include "game.h"
 
 Beast *add_new_beast(Game *game) {
     if (game->beast_count < MAX_BEASTS) {
@@ -68,8 +69,16 @@ void move_beast(Game *game, Beast *beast) {
     if (is_valid_move) {
         beast->current_location = new_location;
     }
-    if (game->map->fields[beast->current_location.y][beast->current_location.x].tile == WALL) {
+    if (game->map->fields[beast->current_location.y][beast->current_location.x].tile == BUSH) {
         beast->is_stunned = 1;
+    }
+
+    for(int i=0;i<MAX_PLAYERS; i++) {
+        if(game->players[i]) {
+            if(game->players[i]->current_location.x == beast->current_location.x && game->players[i]->current_location.y == beast->current_location.y) {
+                game->players[i]->is_dead = 1;
+            }
+        }
     }
 
 

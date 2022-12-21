@@ -168,6 +168,9 @@ void *gameLoop(void *arg) {
             move_beasts(game);
         }
         kill_and_respawn_dead_players(game);
+
+        pthread_cond_signal(&keyboardCond);
+
         send_map_data_to_all_players(game);
         display_map(game->map);
         display_players_on_map(game);
@@ -180,9 +183,8 @@ void *gameLoop(void *arg) {
         refresh();
         pthread_mutex_unlock(&game->game_mutex);
 
-        usleep(500000);
         pthread_cond_signal(&beastCond);
-        pthread_cond_signal(&keyboardCond);
+        usleep(500000);
 
         game->round_number += 1;
 
